@@ -134,7 +134,7 @@ namespace Projeto_Fase2
             }
             else if (CamT2)
             {
-                position = tankenemy.TankFollow(tankenemy.positionTank, tankenemy.direction, terreno);
+                position = tank.TankFollow(tankenemy.positionTank, tankenemy.direction, terreno);
                 viewMatrix = Matrix.CreateLookAt(position, (tankenemy.positionTank + direction), Vector3.Up);
             }
 
@@ -147,7 +147,6 @@ namespace Projeto_Fase2
             
         }
 
-        #region SurfaceFollow
         public float SurfaceFollow(Vector3 pos, Vector3[,] alturasdata)
         {
             float altura12, altura34, altura;
@@ -175,6 +174,5 @@ namespace Projeto_Fase2
 
             return (altura + 2.0f);
         }
-        #endregion
     }
 }

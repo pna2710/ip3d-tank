@@ -12,7 +12,7 @@ namespace Projeto_Fase2
 {
     public class ClsTank
     {
-        Model myModel;
+        Model MyModel;
 
         Matrix world;
 
@@ -51,29 +51,29 @@ namespace Projeto_Fase2
         float wheelRotationValue = 0, steerRotationValue = 0, turretRotationValue = 0, cannonRotationValue = 0;
         float scale = 0.005f, yaw = 0, speed = 0.12f;
         public Vector3 positionTank;
-        public BoundingSphere sphereTank, sphereTankEnemy;
+        public BoundingSphere SphereTank = new BoundingSphere();
 
 
         public ClsTank(GraphicsDevice device, ContentManager content, Terreno terreno)
         {
-            myModel = content.Load<Model>("tank");
+            MyModel = content.Load<Model>("tank");
             world = Matrix.CreateScale(0.005f);//Matrix.Identity;
             positionTank = new Vector3(64f, 10f, 64f);
             
 
 
             //modelos individuas do tank.
-            turretBone = myModel.Bones["turret_geo"];
-            cannonBone = myModel.Bones["canon_geo"];
-            hatchBone = myModel.Bones["hatch_geo"];
-            rFrontWheelBone = myModel.Bones["r_front_wheel_geo"];
-            lFrontWheelBone = myModel.Bones["l_front_wheel_geo"];
-            rBackWheelBone = myModel.Bones["r_back_wheel_geo"];
-            lBackWheelBone = myModel.Bones["l_back_wheel_geo"];
-            rSteerBone = myModel.Bones["r_steer_geo"];
-            lSteerBone = myModel.Bones["l_steer_geo"];
-            rEngineBone = myModel.Bones["r_engine_geo"];
-            lEngineBone = myModel.Bones["l_engine_geo"];
+            turretBone = MyModel.Bones["turret_geo"];
+            cannonBone = MyModel.Bones["canon_geo"];
+            hatchBone = MyModel.Bones["hatch_geo"];
+            rFrontWheelBone = MyModel.Bones["r_front_wheel_geo"];
+            lFrontWheelBone = MyModel.Bones["l_front_wheel_geo"];
+            rBackWheelBone = MyModel.Bones["r_back_wheel_geo"];
+            lBackWheelBone = MyModel.Bones["l_back_wheel_geo"];
+            rSteerBone = MyModel.Bones["r_steer_geo"];
+            lSteerBone = MyModel.Bones["l_steer_geo"];
+            rEngineBone = MyModel.Bones["r_engine_geo"];
+            lEngineBone = MyModel.Bones["l_engine_geo"];
 
             //tranformacoes dos modelos individuais do tank
             turretTransform = turretBone.Transform;
@@ -88,10 +88,10 @@ namespace Projeto_Fase2
             lEngineTransform = lEngineBone.Transform;
             hatchTransform = hatchBone.Transform;
 
-            bonetransforms = new Matrix[myModel.Bones.Count];
+            bonetransforms = new Matrix[MyModel.Bones.Count];
         }
 
-        public void UpdatePlayer(KeyboardState kb, Camera camera, Terreno terreno, ClsTank tankEnemy)
+        public void UpdatePlayer(KeyboardState kb, Camera camera, Terreno terreno, Vector3 pos, Vector3 pos1)
         {
             KeyboardState key = Keyboard.GetState();
 
@@ -146,87 +146,87 @@ namespace Projeto_Fase2
             }
 
             Vector3 aux1 = (positionTank + (direction * speed));
-            if ((key.IsKeyUp(Keys.W) && key.IsKeyUp(Keys.S)) || (key.IsKeyDown(Keys.W) && key.IsKeyDown(Keys.S)))
-            {
+            if (!colisao(aux1, pos))
+           {
+                if ((key.IsKeyUp(Keys.W) && key.IsKeyUp(Keys.S)) || (key.IsKeyDown(Keys.W) && key.IsKeyDown(Keys.S)))
+                {
 
-                wheelRotationValue = 0;
+                    wheelRotationValue = 0;
 
-            }
-            else if (key.IsKeyDown(Keys.W))
-            {
-                wheelRotationValue += 0.07f;
+                }
+                else if (key.IsKeyDown(Keys.W))
+                {
+                    wheelRotationValue += 0.07f;
 
-                matrixrotacao = Matrix.CreateFromYawPitchRoll(yaw, 0, 0);
-                direction = Vector3.Transform(direction, matrixrotacao);
-
-
-                positionTank -= direction * speed;
-            }
-
-            Vector3 aux = (positionTank + (direction * speed));
-
-            if (key.IsKeyDown(Keys.S))
-            {
-                wheelRotationValue -= 0.07f;
-
-                matrixrotacao = Matrix.CreateFromYawPitchRoll(-yaw, 0, 0);
-                direction = Vector3.Transform(direction, matrixrotacao);
-
-                positionTank += direction * speed;
-            }
+                    matrixrotacao = Matrix.CreateFromYawPitchRoll(yaw, 0, 0);
+                    direction = Vector3.Transform(direction, matrixrotacao);
 
 
+                    positionTank -= direction * speed;
+                }
+            
+                Vector3 aux = (positionTank + (direction * speed));
+                if (!colisao(aux, pos1))
+                {
+                    if (key.IsKeyDown(Keys.S))
+                    {
+                        wheelRotationValue -= 0.07f;
 
-            if (this.positionTank.Z >= 126)
-            {
-                positionTank.Z = 126;
-            }
-            if (this.positionTank.Z <= 1)
-            {
-                positionTank.Z = 1;
-            }
-            if (this.positionTank.X >= 126)
-            {
-                positionTank.X = 126;
-            }
-            if (this.positionTank.X <= 1)
-            {
-                positionTank.X = 1;
-            }
+                        matrixrotacao = Matrix.CreateFromYawPitchRoll(-yaw, 0, 0);
+                        direction = Vector3.Transform(direction, matrixrotacao);
 
-            Matrix translacao = Matrix.CreateTranslation(positionTank);
-            Matrix rotacao = Matrix.Identity;
+                        positionTank += direction * speed;
+                    }
 
-            normalant = tanknormal;
-            tankRight = Vector3.Cross(direction, tanknormal);
-            tankdirecao = Vector3.Cross(tanknormal, tankRight);
 
-            rotacao.Forward = tankdirecao;
-            rotacao.Up = tanknormal;
-            rotacao.Right = tankRight;
 
-            myModel.Root.Transform = Matrix.CreateScale(scale) * rotacao * translacao;
-            turretBone.Transform = Matrix.CreateRotationY(turretRotationValue) * turretTransform;
-            cannonBone.Transform = Matrix.CreateRotationX(cannonRotationValue) * cannonTransform;
-            rFrontWheelBone.Transform = Matrix.CreateRotationX(wheelRotationValue) * rFrontWheelTransform;
-            lFrontWheelBone.Transform = Matrix.CreateRotationX(wheelRotationValue) * lFrontWheelTransform;
-            rBackWheelBone.Transform = Matrix.CreateRotationX(wheelRotationValue) * rBackWheelTransform;
-            lBackWheelBone.Transform = Matrix.CreateRotationX(wheelRotationValue) * lBackWheelTransform;
-            rSteerBone.Transform = Matrix.CreateRotationY(steerRotationValue) * rSteerTransform;
-            lSteerBone.Transform = Matrix.CreateRotationY(steerRotationValue) * lSteerTransform;
-            myModel.CopyAbsoluteBoneTransformsTo(bonetransforms);
+                    if (this.positionTank.Z >= 126)
+                    {
+                        positionTank.Z = 126;
+                    }
+                    if (this.positionTank.Z <= 1)
+                    {
+                        positionTank.Z = 1;
+                    }
+                    if (this.positionTank.X >= 126)
+                    {
+                        positionTank.X = 126;
+                    }
+                    if (this.positionTank.X <= 1)
+                    {
+                        positionTank.X = 1;
+                    }
 
-            /*Surface Follow e Normal Follow para interpolação na translação em y e na rotação do tanque, respetivamente,
-             *de forma a acompanhar as mudanças de altitude no terreno */
-            positionTank.Y = SurfaceFollow(positionTank, terreno.alturasdata);
-            tanknormal = NormalFollow(positionTank, terreno);
+                    Matrix translacao = Matrix.CreateTranslation(positionTank);
+                    Matrix rotacao = Matrix.Identity;
 
-            if (IsColliding(myModel, tankEnemy.myModel, world, tankEnemy.world))
-            {
-                positionTank.X += 20;
-            }
+                    normalant = tanknormal;
+                    tankRight = Vector3.Cross(direction, tanknormal);
+                    tankdirecao = Vector3.Cross(tanknormal, tankRight);
 
-        }
+                    rotacao.Forward = tankdirecao;
+                    rotacao.Up = tanknormal;
+                    rotacao.Right = tankRight;
+
+                    MyModel.Root.Transform = Matrix.CreateScale(scale) * rotacao * translacao;
+                    SphereTank.Transform(MyModel.Root.Transform);
+                    turretBone.Transform = Matrix.CreateRotationY(turretRotationValue) * turretTransform;
+                    cannonBone.Transform = Matrix.CreateRotationX(cannonRotationValue) * cannonTransform;
+                    rFrontWheelBone.Transform = Matrix.CreateRotationX(wheelRotationValue) * rFrontWheelTransform;
+                    lFrontWheelBone.Transform = Matrix.CreateRotationX(wheelRotationValue) * lFrontWheelTransform;
+                    rBackWheelBone.Transform = Matrix.CreateRotationX(wheelRotationValue) * rBackWheelTransform;
+                    lBackWheelBone.Transform = Matrix.CreateRotationX(wheelRotationValue) * lBackWheelTransform;
+                    rSteerBone.Transform = Matrix.CreateRotationY(steerRotationValue) * rSteerTransform;
+                    lSteerBone.Transform = Matrix.CreateRotationY(steerRotationValue) * lSteerTransform;
+                    MyModel.CopyAbsoluteBoneTransformsTo(bonetransforms);
+
+                    /*Surface Follow e Normal Follow para interpolação na translação em y e na rotação do tanque, respetivamente,
+                     *de forma a acompanhar as mudanças de altitude no terreno */
+                    positionTank.Y = SurfaceFollow(positionTank, terreno.alturasdata);
+                    tanknormal = NormalFollow(positionTank, terreno);
+                }
+              }
+          }
 
         public void UpdateEnemy(KeyboardState kb, Camera camera, Terreno terreno)
         {
@@ -338,7 +338,7 @@ namespace Projeto_Fase2
             rotacao.Up = tanknormal;
             rotacao.Right = tankRight;
 
-            myModel.Root.Transform = Matrix.CreateScale(scale) * rotacao * translacao;
+            MyModel.Root.Transform = Matrix.CreateScale(scale) * rotacao * translacao;
             
             turretBone.Transform = Matrix.CreateRotationY(turretRotationValue) * turretTransform;
             cannonBone.Transform = Matrix.CreateRotationX(cannonRotationValue) * cannonTransform;
@@ -348,7 +348,7 @@ namespace Projeto_Fase2
             lBackWheelBone.Transform = Matrix.CreateRotationX(wheelRotationValue) * lBackWheelTransform;
             rSteerBone.Transform = Matrix.CreateRotationY(steerRotationValue) * rSteerTransform;
             lSteerBone.Transform = Matrix.CreateRotationY(steerRotationValue) * lSteerTransform;
-            myModel.CopyAbsoluteBoneTransformsTo(bonetransforms);
+            MyModel.CopyAbsoluteBoneTransformsTo(bonetransforms);
 
             /*Surface Follow e Normal Follow para interpolação na translação em y e na rotação do tanque, respetivamente,
              *de forma a acompanhar as mudanças de altitude no terreno */
@@ -356,28 +356,21 @@ namespace Projeto_Fase2
             tanknormal = NormalFollow(positionTank, terreno);
         }
 
-        private bool IsColliding(Model tank1, Model tank2, Matrix world1, Matrix world2)
+        public bool colisao(Vector3 pos1, Vector3 pos2)
         {
-            for (int i = 0; i < tank1.Meshes.Count; i++)
-            {
-                sphereTank = tank1.Meshes[i].BoundingSphere;
-                sphereTank = sphereTank.Transform(world1);
+            bool colisao = false;
+            float distancia;
 
-                for (int j = 0; j < tank2.Meshes.Count; j++)
-                {
-                    sphereTankEnemy = tank2.Meshes[j].BoundingSphere;
-                    sphereTankEnemy = sphereTankEnemy.Transform(world2);
+            distancia = Vector3.Distance(pos1, pos2);
 
-                    if (sphereTank.Intersects(sphereTankEnemy))
-                        return true;
-                }
-            }
-            return false;
+            if (distancia < 3.5f)
+                colisao = true;
+            else
+                colisao = false;
+            return colisao;
         }
 
-        
-   
-        #region Surface Follow
+        //#region Surface Follow
         public float SurfaceFollow(Vector3 pos, Vector3[,] alturasdata)
         {
             float altura12, altura34, altura;
@@ -405,7 +398,7 @@ namespace Projeto_Fase2
 
             return (altura);
         }
-        #endregion
+        //#endregion
 
         #region Normal Follow
         public Vector3 NormalFollow(Vector3 pos, Terreno terreno)
@@ -451,7 +444,7 @@ namespace Projeto_Fase2
         public void Draw(GraphicsDevice device, Camera camera, Terreno terreno)
         {
 
-            foreach (ModelMesh mesh in myModel.Meshes)
+            foreach (ModelMesh mesh in MyModel.Meshes)
             {
                 foreach (BasicEffect effect in mesh.Effects)
                 {

@@ -72,7 +72,7 @@ namespace Projeto_Fase2
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
             camera.Update(GraphicsDevice, terreno, tank, tankenemy);
-            tank.UpdatePlayer( kb, camera, terreno, tankenemy);
+            tank.UpdatePlayer( kb, camera, terreno, tank.positionTank,tankenemy.positionTank);
             tankenemy.UpdateEnemy(kb, camera, terreno);
 
             // TODO: Add your update logic here
