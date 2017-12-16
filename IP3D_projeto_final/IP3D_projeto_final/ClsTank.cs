@@ -255,28 +255,7 @@ namespace IP3D_projeto_final
 
         public void UpdateEnemy(KeyboardState kb, Camera camera, Terreno terreno, Vector3 pos2, Vector3 direc, GameTime gt)
         {
-            float distancia = Vector3.Distance(positionTank, pos2);
-
-            // MOVER TANK
-            Vector3 DirectFut = ((pos2 + direc) - positionTank);
-            Vector3 a = (DirectFut - direction);
-            a.Normalize();
-            a = a * 9.8f;
-
-            Vector3 v = Vector3.Zero;
-            v = v + a * (float)gt.ElapsedGameTime.TotalSeconds;
-
-            direction = v;
-            direction = direction * -1;
-            direction.Normalize();
-
-            if (distancia > 15f)
-            {
-                //ANDAR
-                positionTank -= direction * 0.02f;
-                positionTank.Y = (camera.SurfaceFollow(positionTank, terreno.alturasdata) - 2.5f);
-            }
-
+            
 
 
             if (this.positionTank.Z >= 126)
