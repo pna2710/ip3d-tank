@@ -60,7 +60,7 @@
     <MonoGameContentReference Include="Content\Content.mgcb" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Content\bala.xnb">
+    <None Include="Content\bala.c4d">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Content\engine_diff_tex.xnb">

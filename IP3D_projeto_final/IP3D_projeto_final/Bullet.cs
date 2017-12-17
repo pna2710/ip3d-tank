@@ -35,19 +35,6 @@ namespace IP3D_projeto_final
             EsfBala = new BoundingSphere(position, 1.0f);
         }
 
-        public void addbullet(Bullet bullet, GameTime c)
-        {
-            float i = c.ElapsedGameTime.Seconds;
-            if(i > 5)
-            {
-                balas.Add(bullet);
-            }
-            else
-            {
-                Console.WriteLine("no bullet");
-            }
-        }
-
         public void Init(Vector3 direcaoB) // Recebe a direcao do canhao e a posicao do tanque
         {
             EsfBala.Center = position;
