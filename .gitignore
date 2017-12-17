@@ -286,3 +286,9 @@ __pycache__/
 *.btm.cs
 *.odx.cs
 *.xsd.cs
+
+IP3D_projeto_final/IP3D_projeto_final/Bullet\.cs
+
+IP3D_projeto_final/IP3D_projeto_final/Content/bala\.c4d
+
+IP3D_projeto_final/IP3D_projeto_final/Content/bala\.xnb

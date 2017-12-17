@@ -16,9 +16,9 @@ namespace IP3D_projeto_final
         KeyboardState kb;
         ClsTank tank, tankenemy;
         Bullet bullet;
-        Vector3 pos2;
+       /* Vector3 pos2;
         Vector3 direc;
-        GameTime gt;
+        GameTime gt;*/
 
         public Game1()
         {
@@ -51,9 +51,9 @@ namespace IP3D_projeto_final
             camera = new Camera(GraphicsDevice);
             terreno = new Terreno(GraphicsDevice, Content);
             tank = new ClsTank(GraphicsDevice, Content, terreno);
-            tankenemy = new ClsTank(GraphicsDevice, Content, terreno);
-            tankenemy.positionTank = new Vector3(54, 10, 54);
-            /*bullet = new Bullet(Content, GraphicsDevice, terreno);*/
+           /* tankenemy = new ClsTank(GraphicsDevice, Content, terreno);*/
+           /* tankenemy.positionTank = new Vector3(54, 10, 54);*/
+            bullet = new Bullet(Content, GraphicsDevice, terreno);
 
             // TODO: use this.Content to load your game content here
         }
@@ -78,8 +78,8 @@ namespace IP3D_projeto_final
                 Exit();
             camera.Update(GraphicsDevice, terreno, tank, tankenemy);
             tank.UpdatePlayer(kb, camera, terreno, tank);
-            tankenemy.UpdateEnemy(kb, camera, terreno, pos2, direc, gt);
-            /*bullet.Update(gameTime, terreno, tank);*/
+            /*tankenemy.UpdateEnemy(kb, camera, terreno, pos2, direc, gt);*/
+            bullet.Update(gameTime, terreno, tank);
 
             // TODO: Add your update logic here
             Mouse.SetPosition(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
@@ -98,8 +98,8 @@ namespace IP3D_projeto_final
             // TODO: Add your drawing code here
             terreno.Draw(GraphicsDevice, camera);
             tank.Draw(GraphicsDevice, camera);
-            tankenemy.Draw(GraphicsDevice, camera);
-            /*bullet.Draw(GraphicsDevice, camera);*/
+           /* tankenemy.Draw(GraphicsDevice, camera);*/
+            bullet.Draw(GraphicsDevice, camera);
             base.Draw(gameTime);
         }
     }
