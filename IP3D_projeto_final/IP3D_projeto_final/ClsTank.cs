@@ -50,18 +50,21 @@ namespace IP3D_projeto_final
         public Vector3 Aux;
 
         float wheelRotationValue = 0, steerRotationValue = 0, turretRotationValue = 0, cannonRotationValue = 0;
-        float scale = 0.005f, yaw = 0, speed = 0.12f;
+        float scale = 0.005f, yaw = 0, speed = 0.3f;
         public Vector3 positionTank;
         Bullet bala;
+        BoundingSphere spheretank;
+        public int playernumber;
+        KeyboardState kb;
 
 
-        public ClsTank(GraphicsDevice device, ContentManager content, Terreno terreno)
+        public ClsTank(GraphicsDevice device, ContentManager content, Terreno terreno, int playernumber)
         {
             MyModel = content.Load<Model>("tank");
             world = Matrix.CreateScale(0.005f);//Matrix.Identity;
             positionTank = new Vector3(64f, 10f, 64f);
-
-
+            //spheretank1 = new BoundingSphere(positionTank, (float)2f);
+            this.playernumber = playernumber;
 
             //modelos individuas do tank.
             turretBone = MyModel.Bones["turret_geo"];
@@ -92,7 +95,7 @@ namespace IP3D_projeto_final
             bonetransforms = new Matrix[MyModel.Bones.Count];
         }
 
-        public void UpdatePlayer(KeyboardState kb, Camera camera, Terreno terreno, ClsTank tank)
+        public void UpdatePlayer(KeyboardState kb, Terreno terreno)
         {
             KeyboardState key = Keyboard.GetState();
 
@@ -206,58 +209,40 @@ namespace IP3D_projeto_final
                       bala.IsMove = false;
                   }
               }*/
-
-
-            if (this.positionTank.Z >= 126)
-            {
-                positionTank.Z = 126;
-            }
-            if (this.positionTank.Z <= 1)
-            {
-                positionTank.Z = 1;
-            }
-            if (this.positionTank.X >= 126)
-            {
-                positionTank.X = 126;
-            }
-            if (this.positionTank.X <= 1)
-            {
-                positionTank.X = 1;
-            }
-
-            Matrix translacao = Matrix.CreateTranslation(positionTank);
-            Matrix rotacao = Matrix.Identity;
-
-            normalant = tanknormal;
-            tankRight = Vector3.Cross(direction, tanknormal);
-            tankdirecao = Vector3.Cross(tanknormal, tankRight);
-
-            rotacao.Forward = tankdirecao;
-            rotacao.Up = tanknormal;
-            rotacao.Right = tankRight;
-
-            MyModel.Root.Transform = Matrix.CreateScale(scale) * rotacao * translacao;
-            turretBone.Transform = Matrix.CreateRotationY(turretRotationValue) * turretTransform;
-            cannonBone.Transform = Matrix.CreateRotationX(cannonRotationValue) * cannonTransform;
-            rFrontWheelBone.Transform = Matrix.CreateRotationX(wheelRotationValue) * rFrontWheelTransform;
-            lFrontWheelBone.Transform = Matrix.CreateRotationX(wheelRotationValue) * lFrontWheelTransform;
-            rBackWheelBone.Transform = Matrix.CreateRotationX(wheelRotationValue) * rBackWheelTransform;
-            lBackWheelBone.Transform = Matrix.CreateRotationX(wheelRotationValue) * lBackWheelTransform;
-            rSteerBone.Transform = Matrix.CreateRotationY(steerRotationValue) * rSteerTransform;
-            lSteerBone.Transform = Matrix.CreateRotationY(steerRotationValue) * lSteerTransform;
-            MyModel.CopyAbsoluteBoneTransformsTo(bonetransforms);
-
-            /*Surface Follow e Normal Follow para interpolação na translação em y e na rotação do tanque, respetivamente,
-             *de forma a acompanhar as mudanças de altitude no terreno */
-            positionTank.Y = SurfaceFollow(positionTank, terreno.alturasdata);
-            tanknormal = NormalFollow(positionTank, terreno);
         }
 
-        public void UpdateEnemy(KeyboardState kb, Camera camera, Terreno terreno, Vector3 pos2, Vector3 direc, GameTime gt)
+        public void UpdateEnemy(Terreno terreno, GameTime time,ClsTank otherTank)
         {
-            
+            float distancia = Vector3.Distance(positionTank, otherTank.positionTank);
 
+            // MOVER TANK
+            Vector3 DirectFut = (otherTank.positionTank + tankdirecao) - positionTank;
+            Vector3 a = (DirectFut - direction);
+            a.Normalize();
+           
 
+            Vector3 v =  Vector3.Zero + a * speed;
+
+            direction = v;
+            direction = direction * -1;
+            direction.Normalize();
+
+            matrixrotacao = Matrix.Identity;
+
+            if (distancia > 5f)
+            {
+                //ANDAR
+                wheelRotationValue += 0.07f;
+
+                matrixrotacao = Matrix.CreateFromYawPitchRoll(yaw, 0, 0);
+                direction = Vector3.Transform(direction, matrixrotacao);
+                positionTank -= direction * 0.05f;
+            }
+
+        }
+
+        public void update(Terreno terreno, GameTime time, GraphicsDevice device, Camera camera , KeyboardState kb, ClsTank otherTank)
+        {
             if (this.positionTank.Z >= 126)
             {
                 positionTank.Z = 126;
@@ -302,7 +287,24 @@ namespace IP3D_projeto_final
             positionTank.Y = SurfaceFollow(positionTank, terreno.alturasdata);
             tanknormal = NormalFollow(positionTank, terreno);
 
+            if (playernumber == 1)
+            {
+                UpdatePlayer(kb,terreno);
+            }
+            else if(playernumber == 2)
+            {
+                UpdateEnemy(terreno, time,otherTank);
+            }
         }
+
+       /* public bool bater (BoundingSphere spheretank1, BoundingSphere spheretank2)
+        {
+            spheretank1 = new BoundingSphere(positionTank, 2f);
+            spheretank2 = new BoundingSphere(positionTank, 2f);
+
+
+
+        }*/
 
         //#region Surface Follow
         public float SurfaceFollow(Vector3 pos, Vector3[,] alturasdata)

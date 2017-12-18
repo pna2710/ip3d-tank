@@ -18,7 +18,7 @@ namespace IP3D_projeto_final
         Bullet bullet;
         Vector3 pos2;
         Vector3 direc;
-        GameTime gt;
+        GameTime time;
 
         public Game1()
         {
@@ -50,8 +50,8 @@ namespace IP3D_projeto_final
             kb = new KeyboardState();
             camera = new Camera(GraphicsDevice);
             terreno = new Terreno(GraphicsDevice, Content);
-            tank = new ClsTank(GraphicsDevice, Content, terreno);
-            tankenemy = new ClsTank(GraphicsDevice, Content, terreno);
+            tank = new ClsTank(GraphicsDevice, Content, terreno, 1);
+            tankenemy = new ClsTank(GraphicsDevice, Content, terreno, 2);
             tankenemy.positionTank = new Vector3(54, 10, 54);
             /*bullet = new Bullet(Content, GraphicsDevice, terreno);*/
 
@@ -77,8 +77,8 @@ namespace IP3D_projeto_final
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
             camera.Update(GraphicsDevice, terreno, tank, tankenemy);
-            tank.UpdatePlayer(kb, camera, terreno, tank);
-            tankenemy.UpdateEnemy(kb, camera, terreno, pos2, direc, gt);
+            tank.update( terreno, time, GraphicsDevice, camera, kb, tankenemy);
+            tankenemy.update(terreno, time, GraphicsDevice, camera, kb, tank);
             /*bullet.Update(gameTime, terreno, tank);*/
 
             // TODO: Add your update logic here
