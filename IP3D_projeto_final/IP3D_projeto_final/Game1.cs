@@ -21,6 +21,7 @@ namespace IP3D_projeto_final
         Camera camera;
         Terreno terreno;
         ClsTank tank, tankEnemy;
+        SistemaParticulas Po;
 
         public Game1()
         {
@@ -54,6 +55,7 @@ namespace IP3D_projeto_final
             terreno = new Terreno(GraphicsDevice, Content);
             tank = new ClsTank(GraphicsDevice, Content, new Vector3(64, 10, 64), 1);
             tankEnemy = new ClsTank(GraphicsDevice, Content, new Vector3(54, 10, 54), 2);
+            Po = new SistemaParticulas(GraphicsDevice);
 
             // TODO: use this.Content to load your game content here
         }
@@ -83,6 +85,7 @@ namespace IP3D_projeto_final
             {
                 tank.positionTank = tank.tempPosition;
             }
+            Po.Update(gameTime, tank);
 
             // TODO: Add your update logic here
             Mouse.SetPosition(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
@@ -102,6 +105,7 @@ namespace IP3D_projeto_final
             terreno.Draw(GraphicsDevice, camera);
             tank.Draw(GraphicsDevice, camera);
             tankEnemy.Draw(GraphicsDevice, camera);
+            Po.Draw(GraphicsDevice, camera);
             base.Draw(gameTime);
         }
     }

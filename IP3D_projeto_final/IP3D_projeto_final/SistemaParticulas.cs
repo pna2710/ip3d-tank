@@ -23,9 +23,9 @@ namespace IP3D_projeto_final
         public bool po = false;
         BasicEffect effect;
         Matrix worldMatrix;
-        Vector3 gravidade = new Vector3(0, 9.8f, 0);// vector gravidade que é exercido em todos as particulas
+        Vector3 gravidade = new Vector3(0, -9.8f, 0);// vector gravidade que é exercido em todos as particulas
 
-        public void Zona(GraphicsDevice device)
+        public SistemaParticulas(GraphicsDevice device)
         {
             num = new Random();
             Po = new List<Particula>();
@@ -38,22 +38,22 @@ namespace IP3D_projeto_final
             effect.VertexColorEnabled = true;
         }
 
-        public void Iniciar(ClsTank tank)
+        public void Iniciar(Vector3 pos)
         {
-            centro = tank.positionTank;
+            centro = pos;
         }
 
 
-        public void adicionarParticulas()
+        public void adicionarParticulas(ClsTank tank)
         {
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 5; i++)
             {
 
                 double rNumber1 = num.NextDouble();
                 double rNumber2 = num.NextDouble();
 
-                posicaoInicial.X = (float)(centro.X + raio * rNumber1);
-                posicaoInicial.Z = (float)(centro.Z + raio * rNumber2);
+                posicaoInicial.X = (float)(tank.positionTank.X + raio * rNumber1);
+                posicaoInicial.Z = (float)(tank.positionTank.Z + raio * rNumber2);
 
                 direcao.Normalize();
 
@@ -61,14 +61,14 @@ namespace IP3D_projeto_final
             }
         }
 
-        public void Update(GameTime gameTime, Terreno terra)
+        public void Update(GameTime gameTime, ClsTank tank)
         {
             tempo += (float)gameTime.ElapsedGameTime.TotalSeconds;
-            adicionarParticulas();
+            adicionarParticulas(tank);
 
             foreach (Particula particula in Po)
             {
-                particula.velocidade += gravidade * (float)gameTime.ElapsedGameTime.TotalSeconds * 0.3f;
+                particula.velocidade += gravidade * (float)gameTime.ElapsedGameTime.TotalSeconds * 0.5f;
                 particula.posicao += (particula.velocidade * (float)gameTime.ElapsedGameTime.TotalSeconds);
             }
 
@@ -77,11 +77,11 @@ namespace IP3D_projeto_final
                 particula.verticesP[0] = new VertexPositionColor(particula.posicao, Color.Brown);
                 particula.verticesP[1] = new VertexPositionColor(particula.posicao + particula.velocidade * 0.05f, Color.Brown);
             }
-            //ApagaParticulas(terra);
+           
 
 
         }
-
+        //ApagaParticulas
         public void ApagaParticulas(Camera camera, Vector3[,] alturasdatas)// apaga as particulas que estao abaixo do plano, ou seja y<0
         {
             for (int i = Po.Count - 1; i >= 0; i--)
@@ -97,15 +97,17 @@ namespace IP3D_projeto_final
         public void Draw(GraphicsDevice device, Camera camera)
         {
             Console.WriteLine(Po.Count);
-            foreach (Particula part in Po)
+            foreach (Particula particula in Po)
             {
-                effect.World = worldMatrix;
-                effect.View = camera.viewMatrix;
-                effect.Projection = camera.projectionMatrix;
-                effect.CurrentTechnique.Passes[0].Apply();
-                effect.EnableDefaultLighting();
+                Vector3 dir = new Vector3(64, -50, 64);
+                dir.Normalize();
 
-                device.DrawUserPrimitives<VertexPositionColor>(PrimitiveType.LineList, part.verticesP, 0, 1);
+                effect.World = worldMatrix;
+                effect.View = Matrix.CreateLookAt(new Vector3(64, 50, 64), dir, Vector3.Up);
+                effect.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(45f), (device.Viewport.Width / device.Viewport.Height), 0.1f, 1000f);
+                effect.CurrentTechnique.Passes[0].Apply();
+
+                device.DrawUserPrimitives<VertexPositionColor>(PrimitiveType.LineList, particula.verticesP, 0, 1);
             }
         }
 
