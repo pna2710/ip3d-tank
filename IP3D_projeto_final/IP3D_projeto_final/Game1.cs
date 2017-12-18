@@ -53,7 +53,7 @@ namespace IP3D_projeto_final
             camera = new Camera(GraphicsDevice);
             terreno = new Terreno(GraphicsDevice, Content);
             tank = new ClsTank(GraphicsDevice, Content, new Vector3(64, 10, 64), 1);
-            tankenemy = new ClsTank(GraphicsDevice, Content, new Vector3(54, 10, 54), 2);
+            tankEnemy = new ClsTank(GraphicsDevice, Content, new Vector3(54, 10, 54), 2);
 
             // TODO: use this.Content to load your game content here
         }
@@ -76,9 +76,9 @@ namespace IP3D_projeto_final
         {
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
-            camera.Update(GraphicsDevice, terreno, tank, tankenemy);
+            camera.Update(GraphicsDevice, terreno, tank, tankEnemy);
             tank.Update(GraphicsDevice, Content, gameTime, kb, terreno, tank);
-            tankenemy.Update(GraphicsDevice, Content, gameTime, kb, terreno, tank);
+            tankEnemy.Update(GraphicsDevice, Content, gameTime, kb, terreno, tank);
 
             
             /*bullet.Update(gameTime, terreno, tank);*/
@@ -100,8 +100,7 @@ namespace IP3D_projeto_final
             // TODO: Add your drawing code here
             terreno.Draw(GraphicsDevice, camera);
             tank.Draw(GraphicsDevice, camera);
-            tankenemy.Draw(GraphicsDevice, camera);
-            /*bullet.Draw(GraphicsDevice, camera);*/
+            tankEnemy.Draw(GraphicsDevice, camera);
             base.Draw(gameTime);
         }
     }

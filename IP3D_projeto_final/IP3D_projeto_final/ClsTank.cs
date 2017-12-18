@@ -59,11 +59,13 @@ namespace IP3D_projeto_final
 
         //Collisions
         BoundingSphere spheretank;
-        
+
         //Bullets
-        Bullet b;
-        List<Bullet> bulletsTank, bullets2Enemy;
+        Bullet bTank;
+        Vector3 direcaoTorre, direitaTorre;
         public Vector3 bulletAnt;
+        float ajuste;
+        
 
         #endregion
 
@@ -154,7 +156,7 @@ namespace IP3D_projeto_final
 
             if (playernumber == 1)
             {
-                UpdatePlayer(device, content, kb);
+                UpdatePlayer(device, content, kb, time);
             }
             else if(playernumber == 2)
             {
@@ -163,7 +165,7 @@ namespace IP3D_projeto_final
         }
 
         //Specific Update 1
-        public void UpdatePlayer(GraphicsDevice device, ContentManager content, KeyboardState kb)
+        public void UpdatePlayer(GraphicsDevice device, ContentManager content, KeyboardState kb, GameTime time)
         {
             KeyboardState key = Keyboard.GetState();
 
@@ -243,6 +245,17 @@ namespace IP3D_projeto_final
                 positionTank += direction * speed;
             }
 
+            // Dispara Bala
+            if (key.IsKeyDown(Keys.Space))
+            {
+                bTank = new Bullet(device, content, cannonTransform.Translation, cannonTransform.Forward);
+            }
+
+            //Update da bala
+            if(bTank != null)
+            {
+                bTank.Update(time);
+            }
         }
 
         //Specific Update 2
@@ -292,6 +305,12 @@ namespace IP3D_projeto_final
                 // Draw each mesh of the model
                 mesh.Draw();
             }
+
+            if(bTank != null)
+            {
+                bTank.Draw(device, camera);
+            }
+            
         }
 
         #region Surface Follow

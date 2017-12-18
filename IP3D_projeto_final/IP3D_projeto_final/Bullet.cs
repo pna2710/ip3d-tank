@@ -14,32 +14,31 @@ namespace IP3D_projeto_final
     {
         Model bullet;
         Vector3 velocidade = Vector3.Zero, PrevPos = new Vector3(30, 5, 40);
-        Vector3 direcao;
-        public Vector3 position = new Vector3(30, 5, 40);
+        public Vector3 direcao, position;
         float acelaracao = 20f;
         BasicEffect effect;
         Matrix worldMatrix;
         BoundingSphere EsfBala;
         Vector3 gravidade = new Vector3(0, -9.8f, 0);
 
-        public Bullet(ContentManager content, GraphicsDevice device, Vector3 initialPosition, Vector3 rotation)
+        public Bullet(GraphicsDevice device, ContentManager content, Vector3 initialPosition, Vector3 direcao)
         {
-            effect = new BasicEffect(device);
-            effect.VertexColorEnabled = true;
-            effect.TextureEnabled = false;
-            effect.LightingEnabled = false;
             bullet = content.Load<Model>("bala");
+            effect = new BasicEffect(device);
+            effect.VertexColorEnabled = false;
+            effect.TextureEnabled = true;
+            effect.LightingEnabled = true;
             worldMatrix = Matrix.Identity;
-            EsfBala = new BoundingSphere(position, 1.0f);
+            
+            EsfBala = new BoundingSphere(initialPosition, 1.0f);
 
+            position = initialPosition;
             velocidade = direcao * acelaracao;
         }
 
         
-        public void Update(GameTime gt, Terreno terreno, ClsTank tank)
+        public void Update(GameTime gt)
         {
-            KeyboardState key = Keyboard.GetState();
-
             PrevPos = position; // Posicao antiga. Necessária para o calculo da colisao
 
             velocidade += (gravidade * (float)gt.ElapsedGameTime.TotalSeconds);
@@ -53,7 +52,14 @@ namespace IP3D_projeto_final
               float dist = Vector3.Distance(tank.SphereTank.Center, EsfBala.Center);
               if (dist < 3)
                   return true;
-              else
+              foreach (BasicEffect effect in bullet.Root.Meshes[0].Effects)
+            {
+                effect.World = worldMatrix;
+                effect.View = camera.viewMatrix;
+                effect.Projection = camera.projectionMatrix;
+                effect.EnableDefaultLighting();
+
+            }
                   return false;
           }*/
 
@@ -61,14 +67,16 @@ namespace IP3D_projeto_final
         {
             worldMatrix = Matrix.CreateScale(0.10f) * Matrix.CreateTranslation(position);
             // Draw the model.
-            foreach (BasicEffect effect1 in bullet.Root.Meshes[0].Effects)
+            foreach (BasicEffect effect in bullet.Meshes[0].Effects)
             {
-                effect1.World = worldMatrix;
-                effect1.View = camera.viewMatrix;
-                effect1.Projection = camera.projectionMatrix;
-                effect1.EnableDefaultLighting();
+                effect.World = worldMatrix;
+                effect.View = camera.viewMatrix;
+                effect.Projection = camera.projectionMatrix;
+                effect.EnableDefaultLighting();
 
             }
+
+
         }
     }
 }

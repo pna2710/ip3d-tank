@@ -21,6 +21,10 @@ namespace IP3D_projeto_final
         Vector3 position;
         Vector3 direction;
 
+        //For use by TankFollow
+        Vector3 posCam;
+        Vector3 posA;
+
         public Camera(GraphicsDevice device)
         {
             scale = MathHelper.ToRadians(15) / 50;
@@ -129,12 +133,12 @@ namespace IP3D_projeto_final
             // seguir o tank 1
             else if (CamT1)
             {
-                position = tank.TankFollow(tank.positionTank, tank.direction, terreno);
+                position = TankFollow(tank.positionTank, tank.direction, terreno);
                 viewMatrix = Matrix.CreateLookAt(position, (tank.positionTank + direction), Vector3.Up);
             }
             else if (CamT2)
             {
-                position = tank.TankFollow(tankenemy.positionTank, tankenemy.direction, terreno);
+                position = TankFollow(tankenemy.positionTank, tankenemy.direction, terreno);
                 viewMatrix = Matrix.CreateLookAt(position, (tankenemy.positionTank + direction), Vector3.Up);
             }
 
@@ -174,5 +178,13 @@ namespace IP3D_projeto_final
 
             return (altura + 2.0f);
         }
+
+        public Vector3 TankFollow(Vector3 position, Vector3 direcao, Terreno terreno)
+        {
+            posCam = (position + 10 * direcao);
+            posA = terreno.vertices[(int)position.Z + (int)position.X].Position;
+            posCam.Y = SurfaceFollow(position, terreno.alturasdata) + 4.5f;
+            return posCam;
+        }
     }
 }
