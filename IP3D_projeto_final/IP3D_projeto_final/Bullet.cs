@@ -37,12 +37,12 @@ namespace IP3D_projeto_final
         }
 
         
-        public void Update(GameTime gt)
+        public void Update(GameTime time)
         {
             PrevPos = position; // Posicao antiga. Necessária para o calculo da colisao
 
-            velocidade += (gravidade * (float)gt.ElapsedGameTime.TotalSeconds);
-            position += (velocidade * (float)gt.ElapsedGameTime.TotalSeconds);
+            velocidade += (gravidade * (float)time.ElapsedGameTime.TotalSeconds);
+            position += (velocidade * (float)time.ElapsedGameTime.TotalSeconds);
 
             EsfBala.Center = position;
         }

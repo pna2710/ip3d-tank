@@ -64,12 +64,9 @@ namespace IP3D_projeto_final
         BoundingSphere transformed, sphere;
         Matrix worldTransform;
         
-
-
         //Bullets
         Bullet bTank;
         
-
         #endregion
 
         //Tank 
@@ -382,7 +379,7 @@ namespace IP3D_projeto_final
         #endregion
 
         #region BoundingSphere
-        public BoundingSphere BoundingSphere
+        public BoundingSphere Sphere
         {
             get
             {
@@ -394,7 +391,7 @@ namespace IP3D_projeto_final
             }
         }
 
-        private void buildBoundingSphere()
+        private void createBoundingSphere()
         {
             sphere = new BoundingSphere(myModel.Meshes[0].BoundingSphere.Center, myModel.Meshes[0].BoundingSphere.Radius * 1.8f);
             foreach (ModelMesh mesh in myModel.Meshes)
