@@ -12,7 +12,8 @@ namespace IP3D_projeto_final
 {
     class ClsTank
     {
-        Model MyModel;
+        #region Variables
+        Model myModel;
 
         Matrix world;
 
@@ -40,44 +41,53 @@ namespace IP3D_projeto_final
         Matrix rEngineTransform;
         Matrix lEngineTransform;
         Matrix hatchTransform;
-        Matrix[] bonetransforms;
+        Matrix[] boneTransforms;
 
-        Vector3 normalant;
+        Vector3 normalAnt;
         Vector3 tankRight;
-        Vector3 tanknormal;
-        Vector3 tankdirecao;
+        Vector3 tankNormal;
+        Vector3 tankDirecao;
+
+        //tank number, pos and dir
+        public int playernumber;
+        public Vector3 positionTank;
         public Vector3 direction = new Vector3(1, 0, 0);
-        public Vector3 Aux;
+
 
         float wheelRotationValue = 0, steerRotationValue = 0, turretRotationValue = 0, cannonRotationValue = 0;
         float scale = 0.005f, yaw = 0, speed = 0.3f;
-        public Vector3 positionTank;
-        Bullet bala;
+
+        //Collisions
         BoundingSphere spheretank;
-        public int playernumber;
-        KeyboardState kb;
+        
+        //Bullets
+        Bullet b;
+        List<Bullet> bulletsTank, bullets2Enemy;
+        public Vector3 bulletAnt;
 
+        #endregion
 
-        public ClsTank(GraphicsDevice device, ContentManager content, Terreno terreno, int playernumber)
+        //Tank 
+        public ClsTank(GraphicsDevice device, ContentManager content, Vector3 position, int playernumber)
         {
-            MyModel = content.Load<Model>("tank");
+            myModel = content.Load<Model>("tank");
             world = Matrix.CreateScale(0.005f);//Matrix.Identity;
-            positionTank = new Vector3(64f, 10f, 64f);
+            positionTank = position;
             //spheretank1 = new BoundingSphere(positionTank, (float)2f);
             this.playernumber = playernumber;
 
             //modelos individuas do tank.
-            turretBone = MyModel.Bones["turret_geo"];
-            cannonBone = MyModel.Bones["canon_geo"];
-            hatchBone = MyModel.Bones["hatch_geo"];
-            rFrontWheelBone = MyModel.Bones["r_front_wheel_geo"];
-            lFrontWheelBone = MyModel.Bones["l_front_wheel_geo"];
-            rBackWheelBone = MyModel.Bones["r_back_wheel_geo"];
-            lBackWheelBone = MyModel.Bones["l_back_wheel_geo"];
-            rSteerBone = MyModel.Bones["r_steer_geo"];
-            lSteerBone = MyModel.Bones["l_steer_geo"];
-            rEngineBone = MyModel.Bones["r_engine_geo"];
-            lEngineBone = MyModel.Bones["l_engine_geo"];
+            turretBone = myModel.Bones["turret_geo"];
+            cannonBone = myModel.Bones["canon_geo"];
+            hatchBone = myModel.Bones["hatch_geo"];
+            rFrontWheelBone = myModel.Bones["r_front_wheel_geo"];
+            lFrontWheelBone = myModel.Bones["l_front_wheel_geo"];
+            rBackWheelBone = myModel.Bones["r_back_wheel_geo"];
+            lBackWheelBone = myModel.Bones["l_back_wheel_geo"];
+            rSteerBone = myModel.Bones["r_steer_geo"];
+            lSteerBone = myModel.Bones["l_steer_geo"];
+            rEngineBone = myModel.Bones["r_engine_geo"];
+            lEngineBone = myModel.Bones["l_engine_geo"];
 
             //tranformacoes dos modelos individuais do tank
             turretTransform = turretBone.Transform;
@@ -92,10 +102,68 @@ namespace IP3D_projeto_final
             lEngineTransform = lEngineBone.Transform;
             hatchTransform = hatchBone.Transform;
 
-            bonetransforms = new Matrix[MyModel.Bones.Count];
+            boneTransforms = new Matrix[myModel.Bones.Count];
         }
 
-        public void UpdatePlayer(KeyboardState kb, Terreno terreno)
+        //Update
+        public void Update(GraphicsDevice device, ContentManager content, GameTime time, KeyboardState kb, Terreno terreno, ClsTank tankPlayer)
+        {
+            if (this.positionTank.Z >= 126)
+            {
+                positionTank.Z = 126;
+            }
+            if (this.positionTank.Z <= 1)
+            {
+                positionTank.Z = 1;
+            }
+            if (this.positionTank.X >= 126)
+            {
+                positionTank.X = 126;
+            }
+            if (this.positionTank.X <= 1)
+            {
+                positionTank.X = 1;
+            }
+
+            Matrix translacao = Matrix.CreateTranslation(positionTank);
+            Matrix rotacao = Matrix.Identity;
+
+            normalAnt = tankNormal;
+            tankRight = Vector3.Cross(direction, tankNormal);
+            tankDirecao = Vector3.Cross(tankNormal, tankRight);
+
+            rotacao.Forward = tankDirecao;
+            rotacao.Up = tankNormal;
+            rotacao.Right = tankRight;
+
+            myModel.Root.Transform = Matrix.CreateScale(scale) * rotacao * translacao;
+            turretBone.Transform = Matrix.CreateRotationY(turretRotationValue) * turretTransform;
+            cannonBone.Transform = Matrix.CreateRotationX(cannonRotationValue) * cannonTransform;
+            rFrontWheelBone.Transform = Matrix.CreateRotationX(wheelRotationValue) * rFrontWheelTransform;
+            lFrontWheelBone.Transform = Matrix.CreateRotationX(wheelRotationValue) * lFrontWheelTransform;
+            rBackWheelBone.Transform = Matrix.CreateRotationX(wheelRotationValue) * rBackWheelTransform;
+            lBackWheelBone.Transform = Matrix.CreateRotationX(wheelRotationValue) * lBackWheelTransform;
+            rSteerBone.Transform = Matrix.CreateRotationY(steerRotationValue) * rSteerTransform;
+            lSteerBone.Transform = Matrix.CreateRotationY(steerRotationValue) * lSteerTransform;
+            myModel.CopyAbsoluteBoneTransformsTo(boneTransforms);
+
+            /*Surface Follow e Normal Follow para interpolação na translação em y e na rotação do tanque, respetivamente,
+             *de forma a acompanhar as mudanças de altitude no terreno */
+            positionTank.Y = SurfaceFollow(positionTank, terreno.alturasdata);
+            tankNormal = NormalFollow(positionTank, terreno);
+
+            if (playernumber == 1)
+            {
+                UpdatePlayer(device, content, kb);
+            }
+            else if(playernumber == 2)
+            {
+                UpdateEnemy(device, content,tankPlayer);
+            }
+        }
+
+        //Specific Update 1
+        public void UpdatePlayer(GraphicsDevice device, ContentManager content, KeyboardState kb)
         {
             KeyboardState key = Keyboard.GetState();
 
@@ -175,48 +243,15 @@ namespace IP3D_projeto_final
                 positionTank += direction * speed;
             }
 
-            // Dispara Bala
-            /* if (key.IsKeyDown(Keys.Space) && bala.IsMove == false)
-              {
-                  bala.position = tank.positionTank + (tank.tanknormal * 1.6f);
-                  Vector3 direcaoTorre = tank.Aux;
-                  direcaoTorre.Y = -direcaoTorre.Y;
-                  direcaoTorre = Vector3.Transform(direcaoTorre, Matrix.CreateFromAxisAngle(tank.tanknormal, MathHelper.ToRadians(tank.turretRotationValue)));
-                  Vector3 direitaTorre = Vector3.Cross(direcaoTorre, tank.tanknormal);
-                  direcaoTorre = Vector3.Transform(direcaoTorre, Matrix.CreateFromAxisAngle(direitaTorre, MathHelper.ToRadians(-tank.cannonRotationValue)));
-                  direcaoTorre = Vector3.Transform(direcaoTorre, Matrix.CreateRotationY(MathHelper.ToRadians(180f)));
-                  float ajuste = (float)Math.Atan2(tank.tanknormal.Length(), Vector3.Up.Length());
-                  ajuste += MathHelper.ToRadians(90);
-                  direcaoTorre = Vector3.Transform(direcaoTorre, Matrix.CreateFromAxisAngle(direcaoTorre, MathHelper.ToRadians(ajuste)));
-                  bala.Init(direcaoTorre);
-              }
-
-              if (bala.IsMove == true)
-              {
-
-                  // Testa se a bala está dentro do terreno
-                  if (bala.position.X > 0 && bala.position.X < terreno.with && bala.position.Z > 0 && bala.position.Z < terreno.height)
-                  {
-                      // Caso a altura da bala seja menor ou igual à altura do terreno para a posicao actual, desactiva a bala
-                      if (bala.position.Y <= (camera.SurfaceFollow(bala.position,terreno.alturasdata) - 2.5f))
-                      {
-                          bala.IsMove = false;
-                      }
-                  }
-                  // Está fora do terreno, desactiva.
-                  else
-                  {
-                      bala.IsMove = false;
-                  }
-              }*/
         }
 
-        public void UpdateEnemy(Terreno terreno, GameTime time,ClsTank otherTank)
+        //Specific Update 2
+        public void UpdateEnemy(GraphicsDevice device, ContentManager content, ClsTank tankPlayer)
         {
-            float distancia = Vector3.Distance(positionTank, otherTank.positionTank);
+            float distancia = Vector3.Distance(positionTank, tankPlayer.positionTank);
 
             // MOVER TANK
-            Vector3 DirectFut = (otherTank.positionTank + tankdirecao) - positionTank;
+            Vector3 DirectFut = (tankPlayer.positionTank + tankDirecao) - positionTank;
             Vector3 a = (DirectFut - direction);
             a.Normalize();
            
@@ -240,73 +275,26 @@ namespace IP3D_projeto_final
             }
 
         }
-
-        public void update(Terreno terreno, GameTime time, GraphicsDevice device, Camera camera , KeyboardState kb, ClsTank otherTank)
+        
+        //Tank Draw
+        public void Draw(GraphicsDevice device, Camera camera)
         {
-            if (this.positionTank.Z >= 126)
-            {
-                positionTank.Z = 126;
-            }
-            if (this.positionTank.Z <= 1)
-            {
-                positionTank.Z = 1;
-            }
-            if (this.positionTank.X >= 126)
-            {
-                positionTank.X = 126;
-            }
-            if (this.positionTank.X <= 1)
-            {
-                positionTank.X = 1;
-            }
 
-            Matrix translacao = Matrix.CreateTranslation(positionTank);
-            Matrix rotacao = Matrix.Identity;
-
-            normalant = tanknormal;
-            tankRight = Vector3.Cross(direction, tanknormal);
-            tankdirecao = Vector3.Cross(tanknormal, tankRight);
-
-            rotacao.Forward = tankdirecao;
-            rotacao.Up = tanknormal;
-            rotacao.Right = tankRight;
-
-            MyModel.Root.Transform = Matrix.CreateScale(scale) * rotacao * translacao;
-            turretBone.Transform = Matrix.CreateRotationY(turretRotationValue) * turretTransform;
-            cannonBone.Transform = Matrix.CreateRotationX(cannonRotationValue) * cannonTransform;
-            rFrontWheelBone.Transform = Matrix.CreateRotationX(wheelRotationValue) * rFrontWheelTransform;
-            lFrontWheelBone.Transform = Matrix.CreateRotationX(wheelRotationValue) * lFrontWheelTransform;
-            rBackWheelBone.Transform = Matrix.CreateRotationX(wheelRotationValue) * rBackWheelTransform;
-            lBackWheelBone.Transform = Matrix.CreateRotationX(wheelRotationValue) * lBackWheelTransform;
-            rSteerBone.Transform = Matrix.CreateRotationY(steerRotationValue) * rSteerTransform;
-            lSteerBone.Transform = Matrix.CreateRotationY(steerRotationValue) * lSteerTransform;
-            MyModel.CopyAbsoluteBoneTransformsTo(bonetransforms);
-
-            /*Surface Follow e Normal Follow para interpolação na translação em y e na rotação do tanque, respetivamente,
-             *de forma a acompanhar as mudanças de altitude no terreno */
-            positionTank.Y = SurfaceFollow(positionTank, terreno.alturasdata);
-            tanknormal = NormalFollow(positionTank, terreno);
-
-            if (playernumber == 1)
+            foreach (ModelMesh mesh in myModel.Meshes)
             {
-                UpdatePlayer(kb,terreno);
-            }
-            else if(playernumber == 2)
-            {
-                UpdateEnemy(terreno, time,otherTank);
+                foreach (BasicEffect effect in mesh.Effects)
+                {
+                    effect.World = boneTransforms[mesh.ParentBone.Index];
+                    effect.View = camera.viewMatrix;
+                    effect.Projection = camera.projectionMatrix;
+                    effect.EnableDefaultLighting();
+                }
+                // Draw each mesh of the model
+                mesh.Draw();
             }
         }
 
-       /* public bool bater (BoundingSphere spheretank1, BoundingSphere spheretank2)
-        {
-            spheretank1 = new BoundingSphere(positionTank, 2f);
-            spheretank2 = new BoundingSphere(positionTank, 2f);
-
-
-
-        }*/
-
-        //#region Surface Follow
+        #region Surface Follow
         public float SurfaceFollow(Vector3 pos, Vector3[,] alturasdata)
         {
             float altura12, altura34, altura;
@@ -334,7 +322,7 @@ namespace IP3D_projeto_final
 
             return (altura);
         }
-        //#endregion
+        #endregion
 
         #region Normal Follow
         public Vector3 NormalFollow(Vector3 pos, Terreno terreno)
@@ -366,32 +354,14 @@ namespace IP3D_projeto_final
             return (normal);
         }
         #endregion
-
-        public Vector3 TankFollow(Vector3 position, Vector3 direcao, Terreno terreno)
+        
+        /* public bool bater (BoundingSphere spheretank1, BoundingSphere spheretank2)
         {
-            Vector3 posCam;
-            Vector3 posA;
-            posCam = (position + 10 * direcao);
-            posA = terreno.vertices[(int)position.Z + (int)position.X].Position;
-            posCam.Y = SurfaceFollow(position, terreno.alturasdata) + 4.5f;
-            return posCam;
-        }
+            spheretank1 = new BoundingSphere(positionTank, 2f);
+            spheretank2 = new BoundingSphere(positionTank, 2f);
 
-        public void Draw(GraphicsDevice device, Camera camera)
-        {
 
-            foreach (ModelMesh mesh in MyModel.Meshes)
-            {
-                foreach (BasicEffect effect in mesh.Effects)
-                {
-                    effect.World = bonetransforms[mesh.ParentBone.Index];
-                    effect.View = camera.viewMatrix;
-                    effect.Projection = camera.projectionMatrix;
-                    effect.EnableDefaultLighting();
-                }
-                // Draw each mesh of the model
-                mesh.Draw();
-            }
-        }
+
+        }*/
     }
 }

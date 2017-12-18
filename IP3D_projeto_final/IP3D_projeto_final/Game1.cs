@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System.Collections.Generic;
 
 namespace IP3D_projeto_final
 {
@@ -9,16 +10,17 @@ namespace IP3D_projeto_final
     /// </summary>
     public class Game1 : Game
     {
+        static short cooldownB = 5;
+
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
+
+        GameTime time;
+        KeyboardState kb;
+
         Camera camera;
         Terreno terreno;
-        KeyboardState kb;
-        ClsTank tank, tankenemy;
-        Bullet bullet;
-        Vector3 pos2;
-        Vector3 direc;
-        GameTime time;
+        ClsTank tank, tankEnemy;
 
         public Game1()
         {
@@ -50,10 +52,8 @@ namespace IP3D_projeto_final
             kb = new KeyboardState();
             camera = new Camera(GraphicsDevice);
             terreno = new Terreno(GraphicsDevice, Content);
-            tank = new ClsTank(GraphicsDevice, Content, terreno, 1);
-            tankenemy = new ClsTank(GraphicsDevice, Content, terreno, 2);
-            tankenemy.positionTank = new Vector3(54, 10, 54);
-            /*bullet = new Bullet(Content, GraphicsDevice, terreno);*/
+            tank = new ClsTank(GraphicsDevice, Content, new Vector3(64, 10, 64), 1);
+            tankenemy = new ClsTank(GraphicsDevice, Content, new Vector3(54, 10, 54), 2);
 
             // TODO: use this.Content to load your game content here
         }
@@ -77,8 +77,10 @@ namespace IP3D_projeto_final
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
             camera.Update(GraphicsDevice, terreno, tank, tankenemy);
-            tank.update( terreno, time, GraphicsDevice, camera, kb, tankenemy);
-            tankenemy.update(terreno, time, GraphicsDevice, camera, kb, tank);
+            tank.Update(GraphicsDevice, Content, gameTime, kb, terreno, tank);
+            tankenemy.Update(GraphicsDevice, Content, gameTime, kb, terreno, tank);
+
+            
             /*bullet.Update(gameTime, terreno, tank);*/
 
             // TODO: Add your update logic here

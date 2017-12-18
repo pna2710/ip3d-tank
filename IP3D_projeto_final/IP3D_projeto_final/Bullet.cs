@@ -14,43 +14,35 @@ namespace IP3D_projeto_final
     {
         Model bullet;
         Vector3 velocidade = Vector3.Zero, PrevPos = new Vector3(30, 5, 40);
+        Vector3 direcao;
         public Vector3 position = new Vector3(30, 5, 40);
         float acelaracao = 20f;
         BasicEffect effect;
         Matrix worldMatrix;
-        public bool IsMove = false;
         BoundingSphere EsfBala;
-        Vector3 GRAVIDADE = new Vector3(0, -9.8f, 0);
-        List<Bullet> balas;
+        Vector3 gravidade = new Vector3(0, -9.8f, 0);
 
-        public Bullet(ContentManager content, GraphicsDevice device, Terreno terreno)
+        public Bullet(ContentManager content, GraphicsDevice device, Vector3 initialPosition, Vector3 rotation)
         {
             effect = new BasicEffect(device);
             effect.VertexColorEnabled = true;
             effect.TextureEnabled = false;
             effect.LightingEnabled = false;
             bullet = content.Load<Model>("bala");
-            IsMove = false;
             worldMatrix = Matrix.Identity;
             EsfBala = new BoundingSphere(position, 1.0f);
+
+            velocidade = direcao * acelaracao;
         }
 
-        public void Init(Vector3 direcaoB) // Recebe a direcao do canhao e a posicao do tanque
-        {
-            EsfBala.Center = position;
-            EsfBala.Radius = 1.0f;
-
-            velocidade = direcaoB * acelaracao;
-            IsMove = true;
-        }
-
+        
         public void Update(GameTime gt, Terreno terreno, ClsTank tank)
         {
             KeyboardState key = Keyboard.GetState();
 
             PrevPos = position; // Posicao antiga. Necessária para o calculo da colisao
 
-            velocidade += (GRAVIDADE * (float)gt.ElapsedGameTime.TotalSeconds);
+            velocidade += (gravidade * (float)gt.ElapsedGameTime.TotalSeconds);
             position += (velocidade * (float)gt.ElapsedGameTime.TotalSeconds);
 
             EsfBala.Center = position;
@@ -69,16 +61,13 @@ namespace IP3D_projeto_final
         {
             worldMatrix = Matrix.CreateScale(0.10f) * Matrix.CreateTranslation(position);
             // Draw the model.
-            foreach (Bullet b in balas)
+            foreach (BasicEffect effect1 in bullet.Root.Meshes[0].Effects)
             {
-                foreach (BasicEffect effect1 in b.bullet.Root.Meshes[0].Effects)
-                {
-                    effect1.World = worldMatrix;
-                    effect1.View = camera.viewMatrix;
-                    effect1.Projection = camera.projectionMatrix;
-                    effect1.EnableDefaultLighting();
-                }
-                b.bullet.Root.Meshes[0].Draw();
+                effect1.World = worldMatrix;
+                effect1.View = camera.viewMatrix;
+                effect1.Projection = camera.projectionMatrix;
+                effect1.EnableDefaultLighting();
+
             }
         }
     }
