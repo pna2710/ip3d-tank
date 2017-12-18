@@ -12,7 +12,7 @@ namespace IP3D_projeto_final
 {
     class ClsTank
     {
-        Model MyModel;
+        Model myModel;
 
         Matrix world;
 
@@ -53,33 +53,37 @@ namespace IP3D_projeto_final
         float scale = 0.005f, yaw = 0, speed = 0.3f;
         public Vector3 positionTank;
         Bullet bala;
+<<<<<<< HEAD
         BoundingSphere spheretank;
         public int playernumber;
         KeyboardState kb;
+=======
+        BoundingSphere sphereTank, sphereTankEnemy;
+>>>>>>> master
 
 
         public ClsTank(GraphicsDevice device, ContentManager content, Terreno terreno, int playernumber)
         {
-            MyModel = content.Load<Model>("tank");
-            world = Matrix.CreateScale(0.005f);//Matrix.Identity;
+            myModel = content.Load<Model>("tank");
+            world = Matrix.CreateScale(0.005f);//Matrix.Identity; 
             positionTank = new Vector3(64f, 10f, 64f);
             //spheretank1 = new BoundingSphere(positionTank, (float)2f);
             this.playernumber = playernumber;
 
-            //modelos individuas do tank.
-            turretBone = MyModel.Bones["turret_geo"];
-            cannonBone = MyModel.Bones["canon_geo"];
-            hatchBone = MyModel.Bones["hatch_geo"];
-            rFrontWheelBone = MyModel.Bones["r_front_wheel_geo"];
-            lFrontWheelBone = MyModel.Bones["l_front_wheel_geo"];
-            rBackWheelBone = MyModel.Bones["r_back_wheel_geo"];
-            lBackWheelBone = MyModel.Bones["l_back_wheel_geo"];
-            rSteerBone = MyModel.Bones["r_steer_geo"];
-            lSteerBone = MyModel.Bones["l_steer_geo"];
-            rEngineBone = MyModel.Bones["r_engine_geo"];
-            lEngineBone = MyModel.Bones["l_engine_geo"];
+            //modelos individuas do tank. 
+            turretBone = myModel.Bones["turret_geo"];
+            cannonBone = myModel.Bones["canon_geo"];
+            hatchBone = myModel.Bones["hatch_geo"];
+            rFrontWheelBone = myModel.Bones["r_front_wheel_geo"];
+            lFrontWheelBone = myModel.Bones["l_front_wheel_geo"];
+            rBackWheelBone = myModel.Bones["r_back_wheel_geo"];
+            lBackWheelBone = myModel.Bones["l_back_wheel_geo"];
+            rSteerBone = myModel.Bones["r_steer_geo"];
+            lSteerBone = myModel.Bones["l_steer_geo"];
+            rEngineBone = myModel.Bones["r_engine_geo"];
+            lEngineBone = myModel.Bones["l_engine_geo"];
 
-            //tranformacoes dos modelos individuais do tank
+            //tranformacoes dos modelos individuais do tank 
             turretTransform = turretBone.Transform;
             cannonTransform = cannonBone.Transform;
             rFrontWheelTransform = rFrontWheelBone.Transform;
@@ -92,10 +96,14 @@ namespace IP3D_projeto_final
             lEngineTransform = lEngineBone.Transform;
             hatchTransform = hatchBone.Transform;
 
-            bonetransforms = new Matrix[MyModel.Bones.Count];
+            bonetransforms = new Matrix[myModel.Bones.Count];
         }
 
+<<<<<<< HEAD
         public void UpdatePlayer(KeyboardState kb, Terreno terreno)
+=======
+        public void UpdatePlayer(KeyboardState kb, Camera camera, Terreno terreno, ClsTank tankEnemy)
+>>>>>>> master
         {
             KeyboardState key = Keyboard.GetState();
 
@@ -104,7 +112,7 @@ namespace IP3D_projeto_final
                 speed = 0.2f;
             else speed = 0.12f;
 
-            // RODAR PITCH E YAW DO CANHAO
+            // RODAR PITCH E YAW DO CANHAO 
             if (key.IsKeyDown(Keys.Up))
             {
                 if (cannonRotationValue > -1.6f)
@@ -128,7 +136,7 @@ namespace IP3D_projeto_final
                 turretBone.Transform = Matrix.CreateRotationY(MathHelper.ToRadians(turretRotationValue)) * turretTransform;
             }
 
-            // MOVER TANK
+            // MOVER TANK 
             if ((key.IsKeyUp(Keys.D) && key.IsKeyUp(Keys.A)) || (key.IsKeyDown(Keys.D) && key.IsKeyDown(Keys.A)))
             {
                 steerRotationValue = 0;
@@ -149,7 +157,7 @@ namespace IP3D_projeto_final
 
             }
 
-
+            Vector3 aux1 = (positionTank + (direction * speed));
             if ((key.IsKeyUp(Keys.W) && key.IsKeyUp(Keys.S)) || (key.IsKeyDown(Keys.W) && key.IsKeyDown(Keys.S)))
             {
 
@@ -163,9 +171,13 @@ namespace IP3D_projeto_final
                 matrixrotacao = Matrix.CreateFromYawPitchRoll(yaw, 0, 0);
                 direction = Vector3.Transform(direction, matrixrotacao);
 
+
                 positionTank -= direction * speed;
             }
-            else if (key.IsKeyDown(Keys.S))
+
+            Vector3 aux = (positionTank + (direction * speed));
+
+            if (key.IsKeyDown(Keys.S))
             {
                 wheelRotationValue -= 0.07f;
 
@@ -175,6 +187,7 @@ namespace IP3D_projeto_final
                 positionTank += direction * speed;
             }
 
+<<<<<<< HEAD
             // Dispara Bala
             /* if (key.IsKeyDown(Keys.Space) && bala.IsMove == false)
               {
@@ -210,6 +223,8 @@ namespace IP3D_projeto_final
                   }
               }*/
         }
+=======
+>>>>>>> master
 
         public void UpdateEnemy(Terreno terreno, GameTime time,ClsTank otherTank)
         {
@@ -229,6 +244,7 @@ namespace IP3D_projeto_final
 
             matrixrotacao = Matrix.Identity;
 
+<<<<<<< HEAD
             if (distancia > 5f)
             {
                 //ANDAR
@@ -243,6 +259,113 @@ namespace IP3D_projeto_final
 
         public void update(Terreno terreno, GameTime time, GraphicsDevice device, Camera camera , KeyboardState kb, ClsTank otherTank)
         {
+=======
+            myModel.Root.Transform = Matrix.CreateScale(scale) * rotacao * translacao;
+            turretBone.Transform = Matrix.CreateRotationY(turretRotationValue) * turretTransform;
+            cannonBone.Transform = Matrix.CreateRotationX(cannonRotationValue) * cannonTransform;
+            rFrontWheelBone.Transform = Matrix.CreateRotationX(wheelRotationValue) * rFrontWheelTransform;
+            lFrontWheelBone.Transform = Matrix.CreateRotationX(wheelRotationValue) * lFrontWheelTransform;
+            rBackWheelBone.Transform = Matrix.CreateRotationX(wheelRotationValue) * rBackWheelTransform;
+            lBackWheelBone.Transform = Matrix.CreateRotationX(wheelRotationValue) * lBackWheelTransform;
+            rSteerBone.Transform = Matrix.CreateRotationY(steerRotationValue) * rSteerTransform;
+            lSteerBone.Transform = Matrix.CreateRotationY(steerRotationValue) * lSteerTransform;
+            myModel.CopyAbsoluteBoneTransformsTo(bonetransforms);
+
+            /*Surface Follow e Normal Follow para interpolação na translação em y e na rotação do tanque, respetivamente, 
+             *de forma a acompanhar as mudanças de altitude no terreno */
+            positionTank.Y = SurfaceFollow(positionTank, terreno.alturasdata);
+            tanknormal = NormalFollow(positionTank, terreno);
+
+            if (IsColliding(myModel, tankEnemy.myModel, world, tankEnemy.world))
+            {
+                positionTank.X += 20;
+            }
+
+        }
+
+        public void UpdateEnemy(KeyboardState kb, Camera camera, Terreno terreno)
+        {
+            KeyboardState key = Keyboard.GetState();
+
+            if (key.IsKeyDown(Keys.LeftShift))
+                speed = 0.2f;
+            else speed = 0.12f;
+
+            // RODAR PITCH E YAW DO CANHAO 
+            if (key.IsKeyDown(Keys.NumPad8))
+            {
+                if (cannonRotationValue > -1.6f)
+                    cannonRotationValue -= 0.01f;
+                cannonBone.Transform = Matrix.CreateRotationX(MathHelper.ToRadians(cannonRotationValue)) * cannonTransform;
+            }
+            if (key.IsKeyDown(Keys.NumPad2))
+            {
+                if (cannonRotationValue < 0.2f)
+                    cannonRotationValue += 0.01f;
+                cannonBone.Transform = Matrix.CreateRotationX(MathHelper.ToRadians(cannonRotationValue)) * cannonTransform;
+            }
+            if (key.IsKeyDown(Keys.NumPad4))
+            {
+                turretRotationValue += 0.02f;
+                turretBone.Transform = Matrix.CreateRotationY(MathHelper.ToRadians(turretRotationValue)) * turretTransform;
+            }
+            if (key.IsKeyDown(Keys.NumPad6))
+            {
+                turretRotationValue -= 0.02f;
+                turretBone.Transform = Matrix.CreateRotationY(MathHelper.ToRadians(turretRotationValue)) * turretTransform;
+            }
+
+            // MOVER TANK 
+            if ((key.IsKeyUp(Keys.F) && key.IsKeyUp(Keys.H)) || (key.IsKeyDown(Keys.F) && key.IsKeyDown(Keys.H)))
+            {
+                steerRotationValue = 0;
+                yaw = 0;
+            }
+            if (key.IsKeyDown(Keys.F))
+            {
+                yaw = MathHelper.ToRadians(1f);
+                if (steerRotationValue < 0.6f)
+                    steerRotationValue += 0.1f;
+
+            }
+            if (key.IsKeyDown(Keys.H))
+            {
+                yaw = -MathHelper.ToRadians(1f);
+                if (steerRotationValue > -0.6f)
+                    steerRotationValue -= 0.1f;
+
+            }
+
+
+            if ((key.IsKeyUp(Keys.T) && key.IsKeyUp(Keys.G)) || (key.IsKeyDown(Keys.T) && key.IsKeyDown(Keys.G)))
+            {
+
+                wheelRotationValue = 0;
+
+            }
+            else if (key.IsKeyDown(Keys.T))
+            {
+                wheelRotationValue += 0.07f;
+
+                matrixrotacao = Matrix.CreateFromYawPitchRoll(yaw, 0, 0);
+                direction = Vector3.Transform(direction, matrixrotacao);
+
+                positionTank -= direction * speed;
+            }
+            else if (key.IsKeyDown(Keys.G))
+            {
+                wheelRotationValue -= 0.07f;
+
+                matrixrotacao = Matrix.CreateFromYawPitchRoll(-yaw, 0, 0);
+                direction = Vector3.Transform(direction, matrixrotacao);
+
+                positionTank += direction * speed;
+            }
+
+
+
+
+>>>>>>> master
             if (this.positionTank.Z >= 126)
             {
                 positionTank.Z = 126;
@@ -271,7 +394,8 @@ namespace IP3D_projeto_final
             rotacao.Up = tanknormal;
             rotacao.Right = tankRight;
 
-            MyModel.Root.Transform = Matrix.CreateScale(scale) * rotacao * translacao;
+            myModel.Root.Transform = Matrix.CreateScale(scale) * rotacao * translacao;
+
             turretBone.Transform = Matrix.CreateRotationY(turretRotationValue) * turretTransform;
             cannonBone.Transform = Matrix.CreateRotationX(cannonRotationValue) * cannonTransform;
             rFrontWheelBone.Transform = Matrix.CreateRotationX(wheelRotationValue) * rFrontWheelTransform;
@@ -280,13 +404,27 @@ namespace IP3D_projeto_final
             lBackWheelBone.Transform = Matrix.CreateRotationX(wheelRotationValue) * lBackWheelTransform;
             rSteerBone.Transform = Matrix.CreateRotationY(steerRotationValue) * rSteerTransform;
             lSteerBone.Transform = Matrix.CreateRotationY(steerRotationValue) * lSteerTransform;
-            MyModel.CopyAbsoluteBoneTransformsTo(bonetransforms);
+            myModel.CopyAbsoluteBoneTransformsTo(bonetransforms);
 
-            /*Surface Follow e Normal Follow para interpolação na translação em y e na rotação do tanque, respetivamente,
+            /*Surface Follow e Normal Follow para interpolação na translação em y e na rotação do tanque, respetivamente, 
              *de forma a acompanhar as mudanças de altitude no terreno */
             positionTank.Y = SurfaceFollow(positionTank, terreno.alturasdata);
             tanknormal = NormalFollow(positionTank, terreno);
+        }
 
+        private bool IsColliding(Model tank1, Model tank2, Matrix world1, Matrix world2)
+        {
+            for (int i = 0; i < tank1.Meshes.Count; i++)
+            {
+                sphereTank = tank1.Meshes[i].BoundingSphere;
+                sphereTank = sphereTank.Transform(world1);
+
+                for (int j = 0; j < tank2.Meshes.Count; j++)
+                {
+                    sphereTankEnemy = tank2.Meshes[j].BoundingSphere;
+                    sphereTankEnemy = sphereTankEnemy.Transform(world2);
+
+<<<<<<< HEAD
             if (playernumber == 1)
             {
                 UpdatePlayer(kb,terreno);
@@ -295,6 +433,13 @@ namespace IP3D_projeto_final
             {
                 UpdateEnemy(terreno, time,otherTank);
             }
+=======
+                    if (sphereTank.Intersects(sphereTankEnemy))
+                        return true;
+                }
+            }
+            return false;
+>>>>>>> master
         }
 
        /* public bool bater (BoundingSphere spheretank1, BoundingSphere spheretank2)
@@ -380,7 +525,7 @@ namespace IP3D_projeto_final
         public void Draw(GraphicsDevice device, Camera camera)
         {
 
-            foreach (ModelMesh mesh in MyModel.Meshes)
+            foreach (ModelMesh mesh in myModel.Meshes)
             {
                 foreach (BasicEffect effect in mesh.Effects)
                 {
