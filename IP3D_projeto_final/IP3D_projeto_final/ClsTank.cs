@@ -47,24 +47,27 @@ namespace IP3D_projeto_final
         Vector3 tankRight;
         Vector3 tankNormal;
         Vector3 tankDirecao;
+        Matrix translacao;
+        Matrix rotacao;
 
         //tank number, pos and dir
         public int playernumber;
         public Vector3 positionTank;
+        public Vector3 tempPosition;
         public Vector3 direction = new Vector3(1, 0, 0);
-
-
+        
         float wheelRotationValue = 0, steerRotationValue = 0, turretRotationValue = 0, cannonRotationValue = 0;
         float scale = 0.005f, yaw = 0, speed = 0.3f;
 
         //Collisions
-        BoundingSphere spheretank;
+        private BoundingSphere boundingSphere;
+        BoundingSphere transformed, sphere;
+        Matrix worldTransform;
+        
+
 
         //Bullets
         Bullet bTank;
-        Vector3 direcaoTorre, direitaTorre;
-        public Vector3 bulletAnt;
-        float ajuste;
         
 
         #endregion
@@ -105,10 +108,12 @@ namespace IP3D_projeto_final
             hatchTransform = hatchBone.Transform;
 
             boneTransforms = new Matrix[myModel.Bones.Count];
+
+            buildBoundingSphere();
         }
 
         //Update
-        public void Update(GraphicsDevice device, ContentManager content, GameTime time, KeyboardState kb, Terreno terreno, ClsTank tankPlayer)
+        public void Update(GraphicsDevice device, ContentManager content, GameTime time, Terreno terreno, ClsTank tankPlayer)
         {
             if (this.positionTank.Z >= 126)
             {
@@ -127,8 +132,8 @@ namespace IP3D_projeto_final
                 positionTank.X = 1;
             }
 
-            Matrix translacao = Matrix.CreateTranslation(positionTank);
-            Matrix rotacao = Matrix.Identity;
+            translacao = Matrix.CreateTranslation(positionTank);
+            rotacao = Matrix.Identity;
 
             normalAnt = tankNormal;
             tankRight = Vector3.Cross(direction, tankNormal);
@@ -156,7 +161,7 @@ namespace IP3D_projeto_final
 
             if (playernumber == 1)
             {
-                UpdatePlayer(device, content, kb, time);
+                UpdatePlayer(device, content, time);
             }
             else if(playernumber == 2)
             {
@@ -165,10 +170,10 @@ namespace IP3D_projeto_final
         }
 
         //Specific Update 1
-        public void UpdatePlayer(GraphicsDevice device, ContentManager content, KeyboardState kb, GameTime time)
+        public void UpdatePlayer(GraphicsDevice device, ContentManager content, GameTime time)
         {
             KeyboardState key = Keyboard.GetState();
-
+            tempPosition = positionTank;
 
             if (key.IsKeyDown(Keys.LeftShift))
                 speed = 0.2f;
@@ -256,6 +261,8 @@ namespace IP3D_projeto_final
             {
                 bTank.Update(time);
             }
+
+            
         }
 
         //Specific Update 2
@@ -373,14 +380,30 @@ namespace IP3D_projeto_final
             return (normal);
         }
         #endregion
-        
-        /* public bool bater (BoundingSphere spheretank1, BoundingSphere spheretank2)
+
+        #region BoundingSphere
+        public BoundingSphere BoundingSphere
         {
-            spheretank1 = new BoundingSphere(positionTank, 2f);
-            spheretank2 = new BoundingSphere(positionTank, 2f);
+            get
+            {
+                // No need for rotation, as this is a sphere
+                worldTransform = Matrix.CreateScale(scale) * Matrix.CreateTranslation(positionTank);
+                transformed = boundingSphere;
+                transformed = transformed.Transform(worldTransform);
+                return transformed;
+            }
+        }
 
-
-
-        }*/
+        private void buildBoundingSphere()
+        {
+            sphere = new BoundingSphere(myModel.Meshes[0].BoundingSphere.Center, myModel.Meshes[0].BoundingSphere.Radius * 1.8f);
+            foreach (ModelMesh mesh in myModel.Meshes)
+            {
+                transformed = mesh.BoundingSphere.Transform(boneTransforms[mesh.ParentBone.Index]);
+                sphere = BoundingSphere.CreateMerged(sphere, transformed);
+            }
+            this.boundingSphere = sphere;
+        }
+        #endregion
     }
 }

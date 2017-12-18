@@ -77,11 +77,12 @@ namespace IP3D_projeto_final
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
             camera.Update(GraphicsDevice, terreno, tank, tankEnemy);
-            tank.Update(GraphicsDevice, Content, gameTime, kb, terreno, tank);
-            tankEnemy.Update(GraphicsDevice, Content, gameTime, kb, terreno, tank);
-
-            
-            /*bullet.Update(gameTime, terreno, tank);*/
+            tankEnemy.Update(GraphicsDevice, Content, gameTime, terreno, tank);
+            tank.Update(GraphicsDevice, Content, gameTime, terreno, tank);
+            if ((tank.BoundingSphere.Contains(tankEnemy.BoundingSphere)) == ContainmentType.Intersects)
+            {
+                tank.positionTank = tank.tempPosition;
+            }
 
             // TODO: Add your update logic here
             Mouse.SetPosition(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
