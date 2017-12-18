@@ -41,6 +41,8 @@
     <Compile Include="Bullet.cs" />
     <Compile Include="Camera.cs" />
     <Compile Include="ClsTank.cs" />
+    <Compile Include="Particula.cs" />
+    <Compile Include="SistemaParticulas.cs" />
     <Compile Include="Terreno.cs" />
     <Compile Include="Game1.cs" />
     <Compile Include="Program.cs" />
