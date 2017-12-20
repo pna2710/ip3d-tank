@@ -17,7 +17,10 @@ namespace IP3D_projeto_final
 
         Matrix world;
 
-        ModelBone turretBone;
+        public float cooldown = 5f;
+        public GameTime timeSinceLast;
+
+        public ModelBone turretBone;
         ModelBone cannonBone;
         ModelBone rFrontWheelBone;
         ModelBone lFrontWheelBone;
@@ -45,8 +48,7 @@ namespace IP3D_projeto_final
 
         Vector3 normalAnt;
         Vector3 tankRight;
-        Vector3 tankNormal;
-        Vector3 tankDirecao;
+        public Vector3 tankNormal;
         Matrix translacao;
         Matrix rotacao;
 
@@ -56,7 +58,7 @@ namespace IP3D_projeto_final
         public Vector3 tempPosition;
         public Vector3 direction = new Vector3(1, 0, 0);
         
-        float wheelRotationValue = 0, steerRotationValue = 0, turretRotationValue = 0, cannonRotationValue = 0;
+        public float wheelRotationValue = 0, steerRotationValue = 0, turretRotationValue = 0, cannonRotationValue = 0;
         float scale = 0.005f, yaw = 0, speed = 0.3f;
 
         //Collisions
@@ -66,7 +68,9 @@ namespace IP3D_projeto_final
         
         //Bullets
         Bullet bTank;
-        
+
+        Vector3 turretForward, turretRight, cannonForward, offset; 
+
         #endregion
 
         //Tank 
@@ -106,11 +110,11 @@ namespace IP3D_projeto_final
 
             boneTransforms = new Matrix[myModel.Bones.Count];
 
-            buildBoundingSphere();
+            createBoundingSphere();
         }
 
         //Update
-        public void Update(GraphicsDevice device, ContentManager content, GameTime time, Terreno terreno, ClsTank tankPlayer)
+        public void Update(GraphicsDevice device, ContentManager content, GameTime time, Terreno terreno, ClsTank tankPlayer, ClsTank tankEnemy)
         {
             if (this.positionTank.Z >= 126)
             {
@@ -134,9 +138,8 @@ namespace IP3D_projeto_final
 
             normalAnt = tankNormal;
             tankRight = Vector3.Cross(direction, tankNormal);
-            tankDirecao = Vector3.Cross(tankNormal, tankRight);
 
-            rotacao.Forward = tankDirecao;
+            rotacao.Forward = direction;
             rotacao.Up = tankNormal;
             rotacao.Right = tankRight;
 
@@ -158,7 +161,7 @@ namespace IP3D_projeto_final
 
             if (playernumber == 1)
             {
-                UpdatePlayer(device, content, time);
+                UpdatePlayer(device, content, time, tankEnemy, terreno);
             }
             else if(playernumber == 2)
             {
@@ -167,7 +170,7 @@ namespace IP3D_projeto_final
         }
 
         //Specific Update 1
-        public void UpdatePlayer(GraphicsDevice device, ContentManager content, GameTime time)
+        public void UpdatePlayer(GraphicsDevice device, ContentManager content, GameTime time, ClsTank tankEnemy, Terreno terreno)
         {
             KeyboardState key = Keyboard.GetState();
             tempPosition = positionTank;
@@ -250,16 +253,27 @@ namespace IP3D_projeto_final
             // Dispara Bala
             if (key.IsKeyDown(Keys.Space))
             {
-                bTank = new Bullet(device, content, cannonTransform.Translation, cannonTransform.Forward);
+                if (cooldown <= 0)
+                {
+                    turretForward = Vector3.Normalize(Vector3.Transform(direction, Matrix.CreateFromAxisAngle(tankNormal, turretRotationValue)));
+                    turretRight = Vector3.Normalize(Vector3.Cross(turretForward, tankNormal));
+                    cannonForward = Vector3.Normalize(Vector3.Transform(turretForward, Matrix.CreateFromAxisAngle(turretRight, cannonRotationValue)));
+                    offset = new Vector3((myModel.Bones["turret_geo"].ModelTransform.Translation.X * 1f),
+                        (myModel.Bones["turret_geo"].ModelTransform.Translation.Y * 0.7f),
+                        myModel.Bones["turret_geo"].ModelTransform.Translation.Z * 1f);
+                    bTank = new Bullet(device, content, positionTank + offset, cannonForward, tankNormal, terreno);
+                    cooldown = 5000;
+                }
             }
 
             //Update da bala
             if(bTank != null)
             {
-                bTank.Update(time);
+                bTank.Update(time, tankEnemy);
             }
 
-            
+
+            cooldown -= time.ElapsedGameTime.Milliseconds;
         }
 
         //Specific Update 2
@@ -268,7 +282,7 @@ namespace IP3D_projeto_final
             float distancia = Vector3.Distance(positionTank, tankPlayer.positionTank);
 
             // MOVER TANK
-            Vector3 DirectFut = (tankPlayer.positionTank + tankDirecao) - positionTank;
+            Vector3 DirectFut = (tankPlayer.positionTank + direction) - positionTank;
             Vector3 a = (DirectFut - direction);
             a.Normalize();
            

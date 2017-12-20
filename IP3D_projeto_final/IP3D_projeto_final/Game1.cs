@@ -10,8 +10,7 @@ namespace IP3D_projeto_final
     /// </summary>
     public class Game1 : Game
     {
-        static short cooldownB = 5;
-
+        
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
@@ -51,8 +50,8 @@ namespace IP3D_projeto_final
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
             kb = new KeyboardState();
-            camera = new Camera(GraphicsDevice);
             terreno = new Terreno(GraphicsDevice, Content);
+            camera = new Camera(GraphicsDevice, terreno);
             tank = new ClsTank(GraphicsDevice, Content, new Vector3(64, 10, 64), 1);
             tankEnemy = new ClsTank(GraphicsDevice, Content, new Vector3(54, 10, 54), 2);
             Po = new SistemaParticulas(GraphicsDevice);
@@ -79,9 +78,9 @@ namespace IP3D_projeto_final
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
             camera.Update(GraphicsDevice, terreno, tank, tankEnemy);
-            tankEnemy.Update(GraphicsDevice, Content, gameTime, terreno, tank);
-            tank.Update(GraphicsDevice, Content, gameTime, terreno, tank);
-            if ((tank.BoundingSphere.Contains(tankEnemy.BoundingSphere)) == ContainmentType.Intersects)
+            tankEnemy.Update(GraphicsDevice, Content, gameTime, terreno, tank, tankEnemy);
+            tank.Update(GraphicsDevice, Content, gameTime, terreno, tank, tankEnemy);
+            if (tank.Sphere.Intersects(tankEnemy.Sphere))
             {
                 tank.positionTank = tank.tempPosition;
             }

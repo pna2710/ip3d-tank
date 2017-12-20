@@ -14,18 +14,26 @@ namespace IP3D_projeto_final
         // matrix for camera view and projection
         public Matrix projectionMatrix, viewMatrix, MatrixRotacao;
         BasicEffect effect;
-        bool Cam1 = false, CamT1 = true, CamT2 = false;
+        short cam;
         float yaw, pitch, aspectoRatio, scale = 0.5f, speed = 0.2f;
 
         // actual camera position, direction
         Vector3 position;
         Vector3 direction;
+    
 
         //For use by TankFollow
         Vector3 posCam;
-        Vector3 posA;
+        Vector3 turretForward, turretRight;
 
-        public Camera(GraphicsDevice device)
+        Vector2 posRato, diferenca = new Vector2(0f, 0f);
+        // centro do ecra
+        Vector2 centro;
+        Vector3 directionInX;
+
+        float heightFree;
+
+        public Camera(GraphicsDevice device, Terreno terreno)
         {
             scale = MathHelper.ToRadians(15) / 50;
             position = new Vector3(50f, 10f, 50f);
@@ -38,115 +46,174 @@ namespace IP3D_projeto_final
             effect.LightingEnabled = false;
             effect.VertexColorEnabled = true;
 
+            heightFree = SurfaceFollow(position, terreno.alturasdata);
         }
 
-        public void Update(GraphicsDevice device, Terreno terreno, ClsTank tank, ClsTank tankenemy)
+        public void Update(GraphicsDevice device, Terreno terreno, ClsTank tank, ClsTank tankEnemy)
         {
             MouseState rato = Mouse.GetState();
-            Vector2 posRato, diferenca = new Vector2(0f, 0f);
-            // centro do ecra
-            Vector2 centro = new Vector2(device.Viewport.Width / 2, device.Viewport.Height / 2);
-            // direction do exio Z
-            direction = new Vector3(0.0f, 0.0f, 1f);
-            // calcular a normal entre o vetor Up e o vetor direction, que da o vetor direction do eixos X
-            Vector3 directionInX = Vector3.Cross(Vector3.Up, direction);
-            posRato.X = rato.X;
-            posRato.Y = rato.Y;
-            // diferença entre o centro e a nova posiçao do rato
-            diferenca = posRato - centro;
-            // atraves da diferença conseguimos o yaw e o pitch
-            yaw -= diferenca.X * scale;
+            KeyboardState key = Keyboard.GetState();
 
-            pitch += diferenca.Y * scale;
+            // Alterar cameras
+            if (key.IsKeyDown(Keys.F1))
+            {
+                cam = 1;
+            }
+            else if (key.IsKeyDown(Keys.F2))
+            {
+                cam = 2;
+            }
+            else if (key.IsKeyDown(Keys.F3))
+            {
+                cam = 3;
+            }
+            else if (key.IsKeyDown(Keys.F4))
+            {
+                cam = 4;
+            }
 
-
-
-            //atualizar
-            MatrixRotacao = Matrix.CreateFromYawPitchRoll(yaw, pitch, 0);
-            direction = Vector3.Transform(direction, MatrixRotacao);
-            directionInX = Vector3.Transform(directionInX, MatrixRotacao);
-
-
+            #region Camera Boundings
             if (this.position.Z >= 126)
             {
                 position.Z = 126;
             }
-            if (this.position.Z <= 1)
+            else if (this.position.Z <= 1)
             {
                 position.Z = 1;
             }
-            if (this.position.X >= 126)
+            else if (this.position.X >= 126)
             {
                 position.X = 126;
             }
-            if (this.position.X <= 1)
+            else if (this.position.X <= 1)
             {
                 position.X = 1;
             }
+            #endregion
+
+            switch (cam)
+            {
+               
+                
+                case 2:
+                    turretForward = Vector3.Normalize(Vector3.Transform(tank.direction, Matrix.CreateFromAxisAngle(tank.tankNormal, tank.turretRotationValue)));
+                    turretRight = Vector3.Normalize(Vector3.Cross(turretForward, tank.tankNormal));
+                    posCam = (tank.positionTank + 10 * turretForward);
+                    position = TankFollow(posCam, terreno);
+                    viewMatrix = Matrix.CreateLookAt(position, tank.positionTank, Vector3.Up);
+                    break;
+                case 3:
+                    #region CameraSurfaceFollow
+
+                    diferenca = new Vector2(0f, 0f);
+                    // centro do ecra
+                    centro = new Vector2(device.Viewport.Width / 2, device.Viewport.Height / 2);
+                    // direction do exio Z
+                    direction = new Vector3(0.0f, 0.0f, 1f);
+                    // calcular a normal entre o vetor Up e o vetor direction, que da o vetor direction do eixos X
+                    directionInX = Vector3.Cross(Vector3.Up, direction);
+                    posRato.X = rato.X;
+                    posRato.Y = rato.Y;
+                    // diferença entre o centro e a nova posiçao do rato
+                    diferenca = posRato - centro;
+                    // atraves da diferença conseguimos o yaw e o pitch
+                    yaw -= diferenca.X * scale;
+
+                    pitch += diferenca.Y * scale;
 
 
 
-            // MOVIMENTAR COM WASD
-            KeyboardState key = Keyboard.GetState();
-            //corrida com shift
-            if (key.IsKeyDown(Keys.LeftShift))
-                speed = 0.5f;
-            else speed = 0.2f;
-            //WASD
-            if (key.IsKeyDown(Keys.I))
-                position += direction * speed;
-            if (key.IsKeyDown(Keys.K))
-                position -= direction * speed;
-            if (key.IsKeyDown(Keys.J))
-                position += directionInX * speed;
-            if (key.IsKeyDown(Keys.L))
-                position -= directionInX * speed;
-            // Alterar cameras
-            if (key.IsKeyDown(Keys.F1))
-            {
-                Cam1 = false;
-                CamT1 = true;
-                CamT2 = false;
-            }
-            if (key.IsKeyDown(Keys.F2))
-            {
-                CamT1 = false;
-                Cam1 = true;
-                CamT2 = false;
-            }
-            if (key.IsKeyDown(Keys.F3))
-            {
-                CamT1 = false;
-                Cam1 = false;
-                CamT2 = true;
-            }
-            // atualizar alturas com o surface follow
-            if (Cam1)
-            {
-                // atualizar alturas com o surface follow
-                position.Y = SurfaceFollow(position, terreno.alturasdata);
-                Console.WriteLine("altura: " + SurfaceFollow(position, terreno.alturasdata));
-                //move camera to new position
-                viewMatrix = Matrix.CreateLookAt(position, (position + direction), Vector3.Up);
-                projectionMatrix = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(45f), aspectoRatio, 0.1f, 1000f);
-            }
-            // seguir o tank 1
-            else if (CamT1)
-            {
-                position = TankFollow(tank.positionTank, tank.direction, terreno);
-                viewMatrix = Matrix.CreateLookAt(position, (tank.positionTank + direction), Vector3.Up);
-            }
-            else if (CamT2)
-            {
-                position = TankFollow(tankenemy.positionTank, tankenemy.direction, terreno);
-                viewMatrix = Matrix.CreateLookAt(position, (tankenemy.positionTank + direction), Vector3.Up);
-            }
+                    //atualizar
+                    MatrixRotacao = Matrix.CreateFromYawPitchRoll(yaw, pitch, 0);
+                    direction = Vector3.Transform(direction, MatrixRotacao);
+                    directionInX = Vector3.Transform(directionInX, MatrixRotacao);
+
+                    // MOVIMENTAR COM IJKL
+                    //corrida com shift
+                    if (key.IsKeyDown(Keys.LeftShift))
+                        speed = 0.5f;
+                    else speed = 0.2f;
+                    //WASD
+                    if (key.IsKeyDown(Keys.NumPad8))
+                        position += direction * speed;
+                    if (key.IsKeyDown(Keys.NumPad2))
+                        position -= direction * speed;
+                    if (key.IsKeyDown(Keys.NumPad4))
+                        position += directionInX * speed;
+                    if (key.IsKeyDown(Keys.NumPad6))
+                        position -= directionInX * speed;
+
+                    position.Y = SurfaceFollow(position, terreno.alturasdata);
+
+                    viewMatrix = Matrix.CreateLookAt(position, (position + direction), Vector3.Up);
+
+                    #endregion
+                    break;
+                case 4:
+                    #region CameraFree
+                    diferenca = new Vector2(0f, 0f);
+                    // centro do ecra
+                    centro = new Vector2(device.Viewport.Width / 2, device.Viewport.Height / 2);
+                    // direction do exio Z
+                    direction = new Vector3(0.0f, 0.0f, 1f);
+                    // calcular a normal entre o vetor Up e o vetor direction, que da o vetor direction do eixos X
+                    directionInX = Vector3.Cross(Vector3.Up, direction);
+                    posRato.X = rato.X;
+                    posRato.Y = rato.Y;
+                    // diferença entre o centro e a nova posiçao do rato
+                    diferenca = posRato - centro;
+                    // atraves da diferença conseguimos o yaw e o pitch
+                    yaw -= diferenca.X * scale;
+                    
+                    pitch += diferenca.Y * scale;
 
 
 
-            //move camera to new position
-            viewMatrix = Matrix.CreateLookAt(position, (position + direction), Vector3.Up);
+                    //atualizar
+                    MatrixRotacao = Matrix.CreateFromYawPitchRoll(yaw, pitch, 0);
+                    direction = Vector3.Transform(direction, MatrixRotacao);
+                    directionInX = Vector3.Transform(directionInX, MatrixRotacao);
+
+                    // MOVIMENTAR COM IJKL
+                    //corrida com shift
+                    if (key.IsKeyDown(Keys.LeftShift))
+                        speed = 0.5f;
+                    else speed = 0.2f;
+                    //WASD
+                    if (key.IsKeyDown(Keys.NumPad8))
+                        position += direction * speed;
+                    if (key.IsKeyDown(Keys.NumPad2))
+                        position -= direction * speed;
+                    if (key.IsKeyDown(Keys.NumPad4))
+                        position += directionInX * speed;
+                    if (key.IsKeyDown(Keys.NumPad6))
+                        position -= directionInX * speed;
+
+                    
+
+                    if (key.IsKeyDown(Keys.NumPad1))
+                        heightFree -= speed;
+                    if (key.IsKeyDown(Keys.NumPad7))
+                        heightFree += speed;
+
+                    position.Y = heightFree;
+
+                    viewMatrix = Matrix.CreateLookAt(position, (position + direction), Vector3.Up);
+
+                    #endregion
+                    break;
+                default:
+                    posCam = (tank.positionTank + 12 * tank.direction);
+                    position = TankFollow(posCam, terreno);
+                    viewMatrix = Matrix.CreateLookAt(position, tank.positionTank, Vector3.Up);
+                    break;
+
+
+            }
+
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(45f), aspectoRatio, 0.1f, 1000f);
+
+
 
 
         }
@@ -176,15 +243,14 @@ namespace IP3D_projeto_final
             altura34 = (d4x * y3) + (d3x * y4);
             altura = altura12 * d3z + altura34 * d1z;
 
-            return (altura + 2.0f);
+            return (altura + 1.5f);
         }
 
-        public Vector3 TankFollow(Vector3 position, Vector3 direcao, Terreno terreno)
+        public Vector3 TankFollow(Vector3 pos, Terreno terreno)
         {
-            posCam = (position + 10 * direcao);
-            posA = terreno.vertices[(int)position.Z + (int)position.X].Position;
-            posCam.Y = SurfaceFollow(position, terreno.alturasdata) + 4.5f;
-            return posCam;
-        }
+            pos.Y= SurfaceFollow(position, terreno.alturasdata) + 2.0f;
+            return pos;
+        }
+
     }
 }

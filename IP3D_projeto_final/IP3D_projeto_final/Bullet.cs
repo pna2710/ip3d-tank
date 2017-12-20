@@ -13,15 +13,21 @@ namespace IP3D_projeto_final
     class Bullet
     {
         Model bullet;
+        Vector3 up, forward, right;
+        Matrix rotationMatrix;
+
         Vector3 velocidade = Vector3.Zero, PrevPos = new Vector3(30, 5, 40);
-        public Vector3 direcao, position;
+        public Vector3 position;
         float acelaracao = 20f;
         BasicEffect effect;
         Matrix worldMatrix;
-        BoundingSphere EsfBala;
+        BoundingSphere esfBala;
         Vector3 gravidade = new Vector3(0, -9.8f, 0);
 
-        public Bullet(GraphicsDevice device, ContentManager content, Vector3 initialPosition, Vector3 direcao)
+        //Para verificar colisão com o chão
+        Terreno terreno;
+
+        public Bullet(GraphicsDevice device, ContentManager content, Vector3 initialPosition, Vector3 direcao, Vector3 normal, Terreno terreno)
         {
             bullet = content.Load<Model>("bala");
             effect = new BasicEffect(device);
@@ -30,52 +36,87 @@ namespace IP3D_projeto_final
             effect.LightingEnabled = true;
             worldMatrix = Matrix.Identity;
             
-            EsfBala = new BoundingSphere(initialPosition, 1.0f);
+            esfBala = new BoundingSphere(bullet.Meshes[0].BoundingSphere.Center, bullet.Meshes[0].BoundingSphere.Radius);
 
             position = initialPosition;
-            velocidade = direcao * acelaracao;
+            velocidade = -direcao * acelaracao;
+            forward = -direcao;
+            up = normal;
+            right = Vector3.Cross(up, forward);
+
+            rotationMatrix.Forward = forward;
+            rotationMatrix.Up = up;
+            rotationMatrix.Right = right;
+
+            this.terreno = terreno;
+
+
         }
 
         
-        public void Update(GameTime time)
+        public void Update(GameTime time, ClsTank tank)
         {
+
             PrevPos = position; // Posicao antiga. Necessária para o calculo da colisao
 
             velocidade += (gravidade * (float)time.ElapsedGameTime.TotalSeconds);
             position += (velocidade * (float)time.ElapsedGameTime.TotalSeconds);
 
-            EsfBala.Center = position;
+            esfBala.Center = position;
+
+            if (VerifyIntersectTank(tank) || VerifyIntersectTerrain())
+            {
+                bullet = null;
+            }
+            
+            if (esfBala.Center.Z >= 126 || esfBala.Center.Z <= 1 || esfBala.Center.X >= 126 || esfBala.Center.X <= 1)
+            {
+                bullet = null;
+            }
+            
         }
 
-        /*  public bool Intersect(ClsTank tank)//para colisao
-          {
-              float dist = Vector3.Distance(tank.SphereTank.Center, EsfBala.Center);
-              if (dist < 3)
-                  return true;
-              foreach (BasicEffect effect in bullet.Root.Meshes[0].Effects)
-            {
-                effect.World = worldMatrix;
-                effect.View = camera.viewMatrix;
-                effect.Projection = camera.projectionMatrix;
-                effect.EnableDefaultLighting();
+        public bool VerifyIntersectTank(ClsTank tank)//para colisao
+        {
+            if (esfBala.Intersects(tank.Sphere))
+                return true;
+          
+            return false;
+        }
 
+        public bool VerifyIntersectTerrain()//para colisao
+        {
+            if (!(esfBala.Center.Z >= 126 || esfBala.Center.Z <= 1 || esfBala.Center.X >= 126 || esfBala.Center.X <= 1))
+            {
+                if (esfBala.Center.Y <= terreno.alturasdata[(int)esfBala.Center.X, (int)esfBala.Center.Z].Y)
+                    return true;
+
+                return false;
             }
-                  return false;
-          }*/
+            return true;
+            
+        }
 
         public void Draw(GraphicsDevice device, Camera camera)
         {
             worldMatrix = Matrix.CreateScale(0.10f) * Matrix.CreateTranslation(position);
             // Draw the model.
-            foreach (BasicEffect effect in bullet.Meshes[0].Effects)
+            if (bullet != null)
             {
-                effect.World = worldMatrix;
-                effect.View = camera.viewMatrix;
-                effect.Projection = camera.projectionMatrix;
-                effect.EnableDefaultLighting();
+                foreach (ModelMesh mesh in bullet.Meshes)
+                {
+                    foreach (BasicEffect effect in bullet.Meshes[0].Effects)
+                    {
+                        effect.World = worldMatrix;
+                        effect.View = camera.viewMatrix;
+                        effect.Projection = camera.projectionMatrix;
+                        effect.EnableDefaultLighting();
+
+                    }
+                    mesh.Draw();
+                }
 
             }
-
 
         }
     }
