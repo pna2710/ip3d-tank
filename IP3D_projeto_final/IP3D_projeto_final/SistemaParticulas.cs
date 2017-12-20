@@ -10,6 +10,7 @@ namespace IP3D_projeto_final
 {
     class SistemaParticulas
     {
+        #region Variables
         Vector3 centro;
         float raio;
         Vector3 posicaoInicial;
@@ -22,6 +23,7 @@ namespace IP3D_projeto_final
         BasicEffect effect;
         Matrix worldMatrix;
         Vector3 gravidade = new Vector3(0, -9.8f, 0);// vector gravidade que é exercido em todos as particulas
+        #endregion
 
         public SistemaParticulas(GraphicsDevice device)
         {
@@ -77,9 +79,7 @@ namespace IP3D_projeto_final
                 particula.verticesP[1] = new VertexPositionColor(particula.posicao + particula.velocidade * 0.03f, Color.White);
             }
             ApagaParticulas();
-        }
-
-        public void ApagaParticulas()// apaga as particulas que estao abaixo do plano
+        }        public void ApagaParticulas()// apaga as particulas que estao abaixo do plano
         {
             for (int i = Chuvas.Count - 1; i >= 0; i--)
             {
@@ -108,4 +108,4 @@ namespace IP3D_projeto_final
             }
         }
     }
-}
+}

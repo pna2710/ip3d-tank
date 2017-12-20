@@ -10,7 +10,7 @@ namespace IP3D_projeto_final
     /// </summary>
     public class Game1 : Game
     {
-        
+
         public GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
@@ -20,6 +20,7 @@ namespace IP3D_projeto_final
         Camera camera;
         Terreno terreno;
         ClsTank tank, tankEnemy;
+        SistemaParticulas chuva;
 
         public Game1()
         {
@@ -39,7 +40,6 @@ namespace IP3D_projeto_final
 
             base.Initialize();
         }
-
         /// <summary>
         /// LoadContent will be called once per game and is the place to load
         /// all of your content.
@@ -53,6 +53,7 @@ namespace IP3D_projeto_final
             camera = new Camera(GraphicsDevice, terreno);
             tank = new ClsTank(GraphicsDevice, Content, new Vector3(64, 10, 64), 1);
             tankEnemy = new ClsTank(GraphicsDevice, Content, new Vector3(54, 10, 54), 2);
+            chuva = new SistemaParticulas(GraphicsDevice);
 
             // TODO: use this.Content to load your game content here
         }
@@ -66,7 +67,6 @@ namespace IP3D_projeto_final
             // TODO: Unload any non ContentManager content here
         }
 
-        /// <summary>
         /// Allows the game to run logic such as updating the world,
         /// checking for collisions, gathering input, and playing audio.
         /// </summary>
@@ -82,6 +82,7 @@ namespace IP3D_projeto_final
             {
                 tank.positionTank = tank.tempPosition;
             }
+            chuva.Update(gameTime);
 
             // TODO: Add your update logic here
             Mouse.SetPosition(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
@@ -101,8 +102,8 @@ namespace IP3D_projeto_final
             terreno.Draw(GraphicsDevice, camera);
             tank.Draw(GraphicsDevice, camera);
             tankEnemy.Draw(GraphicsDevice, camera);
+            chuva.Draw(GraphicsDevice);
             base.Draw(gameTime);
         }
     }
-}
-
+}
