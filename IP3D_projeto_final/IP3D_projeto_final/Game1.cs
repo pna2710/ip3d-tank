@@ -11,7 +11,7 @@ namespace IP3D_projeto_final
     public class Game1 : Game
     {
         
-        GraphicsDeviceManager graphics;
+        public GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
         GameTime time;

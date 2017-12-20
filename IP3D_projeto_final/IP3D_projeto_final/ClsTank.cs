@@ -69,8 +69,7 @@ namespace IP3D_projeto_final
         //Bullets
         Bullet bTank;
 
-        Vector3 turretForward, turretRight, cannonForward, offset; 
-
+        Vector3 turretForward, turretRight, cannonForward, offset;
         #endregion
 
         //Tank 
@@ -274,6 +273,8 @@ namespace IP3D_projeto_final
 
 
             cooldown -= time.ElapsedGameTime.Milliseconds;
+
+            
         }
 
         //Specific Update 2

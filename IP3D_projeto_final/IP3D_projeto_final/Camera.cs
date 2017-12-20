@@ -18,7 +18,7 @@ namespace IP3D_projeto_final
         float yaw, pitch, aspectoRatio, scale = 0.5f, speed = 0.2f;
 
         // actual camera position, direction
-        Vector3 position;
+        public Vector3 position;
         Vector3 direction;
     
 
@@ -119,7 +119,7 @@ namespace IP3D_projeto_final
                     // atraves da diferença conseguimos o yaw e o pitch
                     yaw -= diferenca.X * scale;
 
-                    pitch += diferenca.Y * scale;
+                    pitch -= diferenca.Y * scale;
 
 
 
@@ -165,7 +165,7 @@ namespace IP3D_projeto_final
                     // atraves da diferença conseguimos o yaw e o pitch
                     yaw -= diferenca.X * scale;
                     
-                    pitch += diferenca.Y * scale;
+                    pitch -= diferenca.Y * scale;
 
 
 
