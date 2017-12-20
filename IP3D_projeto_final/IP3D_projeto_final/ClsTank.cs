@@ -78,9 +78,11 @@ namespace IP3D_projeto_final
             myModel = content.Load<Model>("tank");
             world = Matrix.CreateScale(0.005f);//Matrix.Identity;
             positionTank = position;
-            //spheretank1 = new BoundingSphere(positionTank, (float)2f);
+
+            //Para propositos de update
             this.playernumber = playernumber;
 
+            #region Models And Transforms
             //modelos individuas do tank.
             turretBone = myModel.Bones["turret_geo"];
             cannonBone = myModel.Bones["canon_geo"];
@@ -106,15 +108,17 @@ namespace IP3D_projeto_final
             lSteerTransform = lSteerBone.Transform;
             lEngineTransform = lEngineBone.Transform;
             hatchTransform = hatchBone.Transform;
-
+            #endregion
             boneTransforms = new Matrix[myModel.Bones.Count];
 
+            //Bounding Sphere do tanque, para as colisões
             createBoundingSphere();
         }
 
         //Update
         public void Update(GraphicsDevice device, ContentManager content, GameTime time, Terreno terreno, ClsTank tankPlayer, ClsTank tankEnemy)
         {
+            #region MapBounding
             if (this.positionTank.Z >= 126)
             {
                 positionTank.Z = 126;
@@ -132,6 +136,8 @@ namespace IP3D_projeto_final
                 positionTank.X = 1;
             }
 
+            #endregion
+
             translacao = Matrix.CreateTranslation(positionTank);
             rotacao = Matrix.Identity;
 
@@ -142,6 +148,7 @@ namespace IP3D_projeto_final
             rotacao.Up = tankNormal;
             rotacao.Right = tankRight;
 
+            #region RotacaoDoTanque
             myModel.Root.Transform = Matrix.CreateScale(scale) * rotacao * translacao;
             turretBone.Transform = Matrix.CreateRotationY(turretRotationValue) * turretTransform;
             cannonBone.Transform = Matrix.CreateRotationX(cannonRotationValue) * cannonTransform;
@@ -152,7 +159,8 @@ namespace IP3D_projeto_final
             rSteerBone.Transform = Matrix.CreateRotationY(steerRotationValue) * rSteerTransform;
             lSteerBone.Transform = Matrix.CreateRotationY(steerRotationValue) * lSteerTransform;
             myModel.CopyAbsoluteBoneTransformsTo(boneTransforms);
-
+            #endregion
+    
             /*Surface Follow e Normal Follow para interpolação na translação em y e na rotação do tanque, respetivamente,
              *de forma a acompanhar as mudanças de altitude no terreno */
             positionTank.Y = SurfaceFollow(positionTank, terreno.alturasdata);
@@ -171,8 +179,11 @@ namespace IP3D_projeto_final
         //Specific Update 1
         public void UpdatePlayer(GraphicsDevice device, ContentManager content, GameTime time, ClsTank tankEnemy, Terreno terreno)
         {
-            KeyboardState key = Keyboard.GetState();
+
             tempPosition = positionTank;
+
+            #region Input
+            KeyboardState key = Keyboard.GetState();
 
             if (key.IsKeyDown(Keys.LeftShift))
                 speed = 0.2f;
@@ -264,6 +275,7 @@ namespace IP3D_projeto_final
                     cooldown = 5000;
                 }
             }
+            #endregion
 
             //Update da bala
             if(bTank != null)
@@ -280,6 +292,7 @@ namespace IP3D_projeto_final
         //Specific Update 2
         public void UpdateEnemy(GraphicsDevice device, ContentManager content, ClsTank tankPlayer)
         {
+            #region TankChaseAI
             float distancia = Vector3.Distance(positionTank, tankPlayer.positionTank);
 
             // MOVER TANK
@@ -305,7 +318,7 @@ namespace IP3D_projeto_final
                 direction = Vector3.Transform(direction, matrixrotacao);
                 positionTank -= direction * 0.05f;
             }
-
+            #endregion
         }
         
         //Tank Draw
@@ -332,6 +345,7 @@ namespace IP3D_projeto_final
             
         }
 
+        //Surface Follow permite ao tanque acompanhar mudanças de altitude com uso de interpolacao
         #region Surface Follow
         public float SurfaceFollow(Vector3 pos, Vector3[,] alturasdata)
         {
@@ -362,6 +376,7 @@ namespace IP3D_projeto_final
         }
         #endregion
 
+        //Normal Follow permite ao tanque acompanhar mudanças de inclinação mudando o seu eixo vertical com uso de interpolacao
         #region Normal Follow
         public Vector3 NormalFollow(Vector3 pos, Terreno terreno)
         {
@@ -393,6 +408,7 @@ namespace IP3D_projeto_final
         }
         #endregion
 
+        //Permite verificar colisões
         #region BoundingSphere
         public BoundingSphere Sphere
         {

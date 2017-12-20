@@ -11,6 +11,7 @@ namespace IP3D_projeto_final
 {
     class Terreno
     {
+        #region Variables
         Texture2D terreno, terreno_tex;
         int vertexCount;
         public BasicEffect effect;
@@ -24,6 +25,7 @@ namespace IP3D_projeto_final
         Color color;
         Color[] ColorShades;
         float yaltura;
+        #endregion
 
         public Terreno(GraphicsDevice device, ContentManager content)
         {
@@ -65,6 +67,7 @@ namespace IP3D_projeto_final
             vertices = new VertexPositionNormalTexture[vertexCount];
             alturasdata = new Vector3[terreno.Width, terreno.Height];
 
+            #region VertexBuffer and IndexBuffer
             // criar vertices
             for (int x = 0; x < terreno.Width; x++)
             {
@@ -93,6 +96,7 @@ namespace IP3D_projeto_final
             }
             indexBuffer = new IndexBuffer(device, typeof(short), indices.Length, BufferUsage.None);
             indexBuffer.SetData(indices);
+            #endregion
 
             return alturasdata;
         }
@@ -106,7 +110,7 @@ namespace IP3D_projeto_final
             Vector3 v1, v2, v3, v4, v5, v6, v7, v8;
             Vector3 n1, n2, n3, n4, n5, n6, n7, n8;
 
-
+            #region NormalCalculation And Storage
 
             for (int z = 0; z < terreno.Width; z++)
             {
@@ -218,6 +222,7 @@ namespace IP3D_projeto_final
 
                 vertexBuffer.SetData(vertices);
             }
+            #endregion
         }
 
         public Vector3 DevolveNormal(Vector3 position)
@@ -242,7 +247,6 @@ namespace IP3D_projeto_final
                 device.DrawIndexedPrimitives(PrimitiveType.TriangleStrip, 0, 0, ColorShades.Length, i * 256, (terreno.Width - 1) * 2);
 
             }
-
         }
     }
 }

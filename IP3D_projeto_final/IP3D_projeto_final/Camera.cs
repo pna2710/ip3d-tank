@@ -11,6 +11,7 @@ namespace IP3D_projeto_final
 {
     class Camera
     {
+        #region Variables
         // matrix for camera view and projection
         public Matrix projectionMatrix, viewMatrix, MatrixRotacao;
         BasicEffect effect;
@@ -32,6 +33,7 @@ namespace IP3D_projeto_final
         Vector3 directionInX;
 
         float heightFree;
+        #endregion
 
         public Camera(GraphicsDevice device, Terreno terreno)
         {
@@ -90,6 +92,8 @@ namespace IP3D_projeto_final
                 position.X = 1;
             }
             #endregion
+
+            #region The Cameras(4)
 
             switch (cam)
             {
@@ -210,14 +214,15 @@ namespace IP3D_projeto_final
 
 
             }
+            #endregion
 
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(45f), aspectoRatio, 0.1f, 1000f);
-
-
-
-
         }
 
+        //Surface Follow e Tank Follow
+        #region BulletFollows
+
+        //A camara acompanha as mudanças de altitude com intepolaçao linear
         public float SurfaceFollow(Vector3 pos, Vector3[,] alturasdata)
         {
             float altura12, altura34, altura;
@@ -246,11 +251,13 @@ namespace IP3D_projeto_final
             return (altura + 1.5f);
         }
 
+        //A camara segue o tanque acompanhando mudanças de altitude com o Surface Follow
         public Vector3 TankFollow(Vector3 pos, Terreno terreno)
         {
             pos.Y= SurfaceFollow(position, terreno.alturasdata) + 2.0f;
             return pos;
         }
+        #endregion
 
     }
 }

@@ -12,6 +12,7 @@ namespace IP3D_projeto_final
 {
     class Bullet
     {
+        #region Variables
         Model bullet;
         Vector3 up, forward, right;
         Matrix rotationMatrix;
@@ -23,6 +24,7 @@ namespace IP3D_projeto_final
         Matrix worldMatrix;
         BoundingSphere esfBala;
         Vector3 gravidade = new Vector3(0, -9.8f, 0);
+        #endregion
 
         //Para verificar colisão com o chão
         Terreno terreno;
