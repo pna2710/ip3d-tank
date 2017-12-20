@@ -11,16 +11,14 @@ namespace IP3D_projeto_final
     class SistemaParticulas
     {
         Vector3 centro;
-        int raio = 6;
+        float raio;
         Vector3 posicaoInicial;
 
         Random num;
-        List<Particula> Po;
-        Vector3 direcao = Vector3.Up;
+        List<Particula> Chuvas;
+        Vector3 direcao;
 
-        float tempo = 0f;
-
-        public bool po = false;
+        float aspectoRatio;
         BasicEffect effect;
         Matrix worldMatrix;
         Vector3 gravidade = new Vector3(0, -9.8f, 0);// vector gravidade que é exercido em todos as particulas
@@ -28,7 +26,11 @@ namespace IP3D_projeto_final
         public SistemaParticulas(GraphicsDevice device)
         {
             num = new Random();
-            Po = new List<Particula>();
+            Chuvas = new List<Particula>();
+
+            centro = new Vector3(62f, 100f, 62f);//"Nuvem"
+            direcao = Vector3.Down;// Direcao da particula
+            raio = 3f;// tamanho da "Nuvem"(area onde existe particulas)
 
             effect = new BasicEffect(device);
             worldMatrix = Matrix.Identity;
@@ -38,79 +40,72 @@ namespace IP3D_projeto_final
             effect.VertexColorEnabled = true;
         }
 
-        public void Iniciar(Vector3 pos)
+        //adiciona particulas a lista chuva e define-lhes a possição inicial. 
+        public void adicionarParticulas()
         {
-            centro = pos;
-        }
-
-
-        public void adicionarParticulas(ClsTank tank)
-        {
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 8; i++)
             {
 
                 double rNumber1 = num.NextDouble();
                 double rNumber2 = num.NextDouble();
 
-                posicaoInicial.X = (float)(tank.positionTank.X + raio * rNumber1);
-                posicaoInicial.Z = (float)(tank.positionTank.Z + raio * rNumber2);
+                posicaoInicial.X = (float)(centro.X + raio * rNumber1);
+                posicaoInicial.Z = (float)(centro.Z + raio * rNumber2);
+                posicaoInicial.Y = centro.Y - 50;
 
+                //direcao = Vector3.Down;
                 direcao.Normalize();
 
-                Po.Add(new Particula(posicaoInicial, direcao));
+                Chuvas.Add(new Particula(posicaoInicial, direcao));
             }
         }
 
-        public void Update(GameTime gameTime, ClsTank tank)
+        //A função update é onde se adiciona a particula e da-se valor as propriedades da particula e atuacilza a velocidade e a posição.
+        public void Update(GameTime gameTime)
         {
-            tempo += (float)gameTime.ElapsedGameTime.TotalSeconds;
-            adicionarParticulas(tank);
+            adicionarParticulas();
 
-            foreach (Particula particula in Po)
+            foreach (Particula particula in Chuvas)
             {
-                particula.velocidade += gravidade * (float)gameTime.ElapsedGameTime.TotalSeconds * 0.5f;
+                particula.velocidade += gravidade * (float)gameTime.ElapsedGameTime.TotalSeconds * 0.3f;
                 particula.posicao += (particula.velocidade * (float)gameTime.ElapsedGameTime.TotalSeconds);
             }
 
-            foreach (Particula particula in Po)
+            foreach (Particula particula in Chuvas)
             {
-                particula.verticesP[0] = new VertexPositionColor(particula.posicao, Color.Brown);
-                particula.verticesP[1] = new VertexPositionColor(particula.posicao + particula.velocidade * 0.05f, Color.Brown);
+                particula.verticesP[0] = new VertexPositionColor(particula.posicao, Color.White);
+                particula.verticesP[1] = new VertexPositionColor(particula.posicao + particula.velocidade * 0.03f, Color.White);
             }
-           
-
-
+            ApagaParticulas();
         }
-        //ApagaParticulas
-        public void ApagaParticulas(Camera camera, Vector3[,] alturasdatas)// apaga as particulas que estao abaixo do plano, ou seja y<0
+
+        public void ApagaParticulas()// apaga as particulas que estao abaixo do plano
         {
-            for (int i = Po.Count - 1; i >= 0; i--)
+            for (int i = Chuvas.Count - 1; i >= 0; i--)
             {
-                if (Po[i].posicao.Y > (camera.SurfaceFollow(centro, alturasdatas) + 5f))
+                if (Chuvas[i].posicao.Y < 48.72f)
                 {
-                    Po.RemoveAt(i);
+                    Chuvas.RemoveAt(i);
                 }
             }
         }
 
 
-        public void Draw(GraphicsDevice device, Camera camera)
+        public void Draw(GraphicsDevice device)
         {
-            Console.WriteLine(Po.Count);
-            foreach (Particula particula in Po)
+            Console.WriteLine(Chuvas.Count);
+            foreach (Particula part in Chuvas)
             {
                 Vector3 dir = new Vector3(64, -50, 64);
                 dir.Normalize();
+                aspectoRatio = (device.Viewport.Width / device.Viewport.Height);
 
                 effect.World = worldMatrix;
                 effect.View = Matrix.CreateLookAt(new Vector3(64, 50, 64), dir, Vector3.Up);
-                effect.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(45f), (device.Viewport.Width / device.Viewport.Height), 0.1f, 1000f);
+                effect.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(45f), aspectoRatio, 0.1f, 1000f);
                 effect.CurrentTechnique.Passes[0].Apply();
-
-                device.DrawUserPrimitives<VertexPositionColor>(PrimitiveType.LineList, particula.verticesP, 0, 1);
+                device.DrawUserPrimitives<VertexPositionColor>(PrimitiveType.LineList, part.verticesP, 0, 1);
             }
         }
-
-
     }
 }

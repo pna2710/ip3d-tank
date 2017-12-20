@@ -20,5 +20,5 @@ namespace IP3D_projeto_final
                 this.velocidade = v;
                 verticesP = new VertexPositionColor[2];
             }
-        }
+    }
 }
